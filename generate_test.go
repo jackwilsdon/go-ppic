@@ -135,13 +135,13 @@ func TestGenerateImageWithInvalidSize(t *testing.T) {
 	_, err := ppic.GenerateImage("jackwilsdon", 31, true, false)
 
 	// Make sure we get the right error.
-	if err == nil || err.Error() != "size must be a multiple of 8" {
+	if err == nil || err != ppic.ErrInvalidSize {
 		msg := "nil"
 
 		if err != nil {
 			msg = "\"" + err.Error() + "\""
 		}
 
-		t.Errorf("expected error to be \"size must be a multiple of 8\" but instead got %s", msg)
+		t.Errorf("expected error to be \"%s\" but got \"%s\"", ppic.ErrInvalidSize, msg)
 	}
 }

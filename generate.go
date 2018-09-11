@@ -11,6 +11,9 @@ import (
 	"math/rand"
 )
 
+// ErrInvalidSize is an error caused by specifying a size which is not a multiple of 8.
+var ErrInvalidSize = errors.New("size must be a multiple of 8")
+
 type surface interface {
 	Set(x, y int, c color.Color)
 }
@@ -110,8 +113,8 @@ func Generate(k string, mX, mY bool) (d [8][8]bool) {
 
 // GenerateImage returns an image for the specified source text, optionally mirrored on the X or Y axis.
 func GenerateImage(k string, size int, mX, mY bool) (image.Image, error) {
-	if size % 8 != 0 {
-		return nil, errors.New("size must be a multiple of 8")
+	if size%8 != 0 {
+		return nil, ErrInvalidSize
 	}
 
 	// The size of each pixel in the image.
