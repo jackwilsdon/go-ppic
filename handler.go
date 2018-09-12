@@ -3,6 +3,7 @@ package ppic
 import (
 	"fmt"
 	"image"
+	"image/draw"
 	"image/gif"
 	"image/jpeg"
 	"image/png"
@@ -16,6 +17,12 @@ import (
 
 // bufferPool is the shared PNG buffer.
 var bufferPool png.EncoderBufferPool = &encoderBufferPool{}
+
+// drawer is our gif drawer.
+var drawer draw.Drawer = bwDrawer{}
+
+// quantizer is our gif quantizer.
+var quantizer draw.Quantizer = bwQuantizer{}
 
 // imageEncoder represents a function which can encode an image.
 type imageEncoder func(io.Writer, image.Image) error
@@ -44,7 +51,7 @@ func getImageEncoder(p string) imageEncoder {
 	switch strings.ToLower(ext) {
 	case ".gif":
 		return func(w io.Writer, i image.Image) error {
-			return gif.Encode(w, i, &gif.Options{NumColors: 2})
+			return gif.Encode(w, i, &gif.Options{NumColors: 2, Drawer: drawer, Quantizer: quantizer})
 		}
 	case ".jpg", ".jpeg":
 		return func(w io.Writer, i image.Image) error {
