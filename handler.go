@@ -49,7 +49,9 @@ func getImageEncoder(p string) imageEncoder {
 		}
 	case "", ".png":
 		return func(w io.Writer, i image.Image) error {
-			return png.Encode(w, i)
+			enc := png.Encoder{CompressionLevel: png.NoCompression}
+
+			return enc.Encode(w, i)
 		}
 	default:
 		return nil
