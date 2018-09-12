@@ -7,6 +7,12 @@ import (
 	"testing"
 )
 
+func BenchmarkGenerate(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		ppic.Generate("jackwilsdon", false, false)
+	}
+}
+
 func TestGenerate(t *testing.T) {
 	grid := ppic.Generate("jackwilsdon", false, false)
 
@@ -66,6 +72,14 @@ func TestGenerate(t *testing.T) {
 		{true, false, true, false, false, true, false, true},
 	}) {
 		t.Error("generated grid does not match test data")
+	}
+}
+
+func BenchmarkGenerateImage(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		if _, err := ppic.GenerateImage("jackwilsdon", 512, false, false); err != nil {
+			b.Errorf("error: %s", err)
+		}
 	}
 }
 
