@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"github.com/jackwilsdon/go-ppic"
 	"image"
+	"image/color"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
@@ -224,6 +225,78 @@ func TestHandlerSize(t *testing.T) {
 				}
 
 				t.Errorf("expected response body \"%s\" for \"%s\" but got \"%s\"", c.response, c.path, txt)
+			}
+		}
+	}
+}
+
+func TestHandler(t *testing.T) {
+	req, err := http.NewRequest(http.MethodGet, "/jackwilsdon", nil)
+
+	if err != nil {
+		t.Errorf("http.NewRequest: %s", err)
+		return
+	}
+
+	rec := httptest.NewRecorder()
+
+	ppic.Handler(rec, req)
+
+	res := rec.Result()
+
+	// Try and decode the image in the response.
+	img, _, err := image.Decode(res.Body)
+
+	if err != nil {
+		t.Fatalf("error returned: %s", err)
+	}
+
+	// Extract the image dimensions.
+	b := img.Bounds()
+	w := b.Dx()
+	h := b.Dy()
+
+	if w != 512 {
+		t.Errorf("expected width to be 512 but got %d", w)
+	}
+
+	if h != 512 {
+		t.Errorf("expected height to be 512 but got %d", h)
+	}
+
+	// We don't want to go any further if any of the dimensions are wrong.
+	if t.Failed() {
+		return
+	}
+
+	// A low resolution version of what we expect the image to look like.
+	data := [8][8]color.Color{
+		{color.Black, color.White, color.Black, color.White, color.White, color.Black, color.White, color.Black},
+		{color.Black, color.Black, color.Black, color.Black, color.Black, color.Black, color.Black, color.Black},
+		{color.Black, color.White, color.Black, color.Black, color.Black, color.Black, color.White, color.Black},
+		{color.White, color.Black, color.Black, color.Black, color.Black, color.Black, color.Black, color.White},
+		{color.White, color.White, color.White, color.White, color.White, color.White, color.White, color.White},
+		{color.Black, color.White, color.White, color.White, color.White, color.White, color.White, color.Black},
+		{color.Black, color.White, color.Black, color.White, color.White, color.Black, color.White, color.Black},
+		{color.White, color.White, color.Black, color.Black, color.Black, color.Black, color.White, color.White},
+	}
+
+	// Pixel size is image size / 8 (the size of the actual grid).
+	pSize := 512 / 8
+
+	// Compare the image data to the low resolution version.
+	for y, row := range data {
+		for x, val := range row {
+			// Get the color at the corresponding pixel.
+			c := img.At(x*pSize, y*pSize)
+
+			// Get the expected and actual RGBA values for the pixel.
+			eR, eG, eB, eA := val.RGBA()
+			r, g, b, a := c.RGBA()
+
+			// Ensure that everything matches up.
+			if eR != r || eG != g || eB != b || eA != a {
+				t.Errorf("expected (%d, %d) to be [%d, %d, %d, %d] but got [%d, %d, %d, %d]", x*pSize, y*pSize, eR, eG, eB, eA, r, g, b, a)
 			}
 		}
 	}
