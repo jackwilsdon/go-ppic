@@ -14,6 +14,9 @@ import (
 	"strings"
 )
 
+// bufferPool is the shared PNG buffer.
+var bufferPool png.EncoderBufferPool = &encoderBufferPool{}
+
 // imageEncoder represents a function which can encode an image.
 type imageEncoder func(io.Writer, image.Image) error
 
@@ -49,7 +52,7 @@ func getImageEncoder(p string) imageEncoder {
 		}
 	case "", ".png":
 		return func(w io.Writer, i image.Image) error {
-			enc := png.Encoder{CompressionLevel: png.NoCompression}
+			enc := png.Encoder{CompressionLevel: png.NoCompression, BufferPool: bufferPool}
 
 			return enc.Encode(w, i)
 		}
