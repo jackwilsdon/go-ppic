@@ -45,7 +45,7 @@ func getImageEncoder(p string) imageEncoder {
 		}
 	case ".jpg", ".jpeg":
 		return func(w io.Writer, i image.Image) error {
-			return jpeg.Encode(w, i, &jpeg.Options{Quality: 100})
+			return jpeg.Encode(w, i, &jpeg.Options{Quality: 1})
 		}
 	case "", ".png":
 		return func(w io.Writer, i image.Image) error {
