@@ -4,11 +4,24 @@ import (
 	"fmt"
 	"github.com/jackwilsdon/go-ppic"
 	"net/http"
+	"net/http/pprof"
 	"os"
 	"strconv"
 )
 
 func main() {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", ppic.Handler)
+
+	// Enable profiling URLs if the debug option is set.
+	if os.Getenv("DEBUG") == "1" {
+		mux.HandleFunc("/debug/pprof/", pprof.Index)
+		mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+		mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+		mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+		mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+	}
+
 	host := os.Getenv("HOST")
 	port := 3000
 
@@ -26,8 +39,7 @@ func main() {
 
 	addr := fmt.Sprintf("%s:%d", host, port)
 
-
-	if err := http.ListenAndServe(addr, http.HandlerFunc(ppic.Handler)); err != nil {
+	if err := http.ListenAndServe(addr, mux); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %s\n", err)
 	}
 }
