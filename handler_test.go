@@ -22,6 +22,45 @@ func isPrintable(s string) bool {
 	return true
 }
 
+func runBenchmark(b *testing.B, path string) {
+	for n := 0; n < b.N; n++ {
+		b.StopTimer()
+
+		req, err := http.NewRequest(http.MethodGet, path, nil)
+
+		if err != nil {
+			b.Errorf("http.NewRequest: %s", err)
+			continue
+		}
+
+		rec := httptest.NewRecorder()
+
+		b.StartTimer()
+
+		ppic.Handler(rec, req)
+
+		b.StopTimer()
+
+		res := rec.Result()
+
+		if res.StatusCode != http.StatusOK {
+			b.Errorf("expected status %d but got %d", http.StatusOK, res.StatusCode)
+		}
+	}
+}
+
+func BenchmarkHandlerPNG(b *testing.B) {
+	runBenchmark(b, "/example.png")
+}
+
+func BenchmarkHandlerGIF(b *testing.B) {
+	runBenchmark(b, "/example.gif")
+}
+
+func BenchmarkHandlerJPEG(b *testing.B) {
+	runBenchmark(b, "/example.jpeg")
+}
+
 func TestHandlerMethod(t *testing.T) {
 	methods := []string{
 		http.MethodHead,
