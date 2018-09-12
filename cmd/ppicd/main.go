@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/jackwilsdon/go-ppic"
+	"github.com/tmthrgd/gziphandler"
 	"net/http"
 	"net/http/pprof"
 	"os"
@@ -37,9 +38,16 @@ func main() {
 		}
 	}
 
+	var handler http.Handler = mux
+
+	// Enable GZIP if it's not disabled.
+	if os.Getenv("GZIP") != "0" {
+		handler = gziphandler.Gzip(mux)
+	}
+
 	addr := fmt.Sprintf("%s:%d", host, port)
 
-	if err := http.ListenAndServe(addr, mux); err != nil {
+	if err := http.ListenAndServe(addr, handler); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %s\n", err)
 	}
 }
