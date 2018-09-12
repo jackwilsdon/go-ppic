@@ -6,17 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"image"
-	"image/color"
 	"math"
 	"math/rand"
 )
 
 // ErrInvalidSize is an error caused by specifying a size which is not a multiple of 8.
 var ErrInvalidSize = errors.New("size must be a multiple of 8")
-
-type surface interface {
-	Set(x, y int, c color.Color)
-}
 
 // hashString hashes the provided string into an integer.
 func hashString(s string) int64 {
@@ -29,11 +24,14 @@ func hashString(s string) int64 {
 	return int64(binary.BigEndian.Uint64(m.Sum(nil)))
 }
 
-// rect draws a rectangle on the provided surface.
-func rect(s surface, r image.Rectangle, c color.Color) {
-	for y := r.Min.Y; y < r.Max.Y; y++ {
-		for x := r.Min.X; x < r.Max.X; x++ {
-			s.Set(x, y, c)
+// white draws a rectangle on the provided surface.
+func white(img image.Gray, x, y, size int) {
+	x *= size
+	y *= size
+
+	for cY := y; cY < y+size; cY++ {
+		for cX := x; cX < x+size; cX++ {
+			img.Pix[(cY-img.Rect.Min.Y)*img.Stride+(cX-img.Rect.Min.X)] = 0xFF
 		}
 	}
 }
@@ -121,25 +119,16 @@ func GenerateImage(k string, size int, mX, mY bool) (image.Image, error) {
 	pSize := size / 8
 
 	// Create the image and image data.
-	img := image.NewRGBA(image.Rect(0, 0, size, size))
+	img := image.NewGray(image.Rect(0, 0, size, size))
 	grid := Generate(k, mX, mY)
 
 	// Draw the image data onto the image.
 	for y, row := range grid {
 		for x, val := range row {
-			c := color.White
-
-			// We draw in black if it's set or white if it's unset.
-			if val {
-				c = color.Black
+			if !val {
+				// Draw the pixel.
+				white(*img, x, y, pSize)
 			}
-
-			// Work out the pixel positions we're drawing at.
-			pX := x * pSize
-			pY := y * pSize
-
-			// Draw the pixel.
-			rect(img, image.Rect(pX, pY, pX+pSize, pY+pSize), c)
 		}
 	}
 
