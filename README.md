@@ -1,6 +1,6 @@
 # :bust_in_silhouette: go-ppic
 
-Profile picture generation service written in Go.
+Profile picture generation service written in Go. A demo can be found at [ppic.now.sh](https://ppic.now.sh/hello).
 
 `go-ppic` provides two commands; [`ppic`](#ppic) and [`ppicd`](#ppicd).
 
