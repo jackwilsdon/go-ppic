@@ -14,64 +14,76 @@ func BenchmarkGenerate(b *testing.B) {
 }
 
 func TestGenerate(t *testing.T) {
-	grid := ppic.Generate("jackwilsdon", false, false)
-
-	if !reflect.DeepEqual(grid, [8][8]bool{
-		{true, false, true, false, true, true, true, true},
-		{true, false, true, true, false, true, true, true},
-		{false, false, false, false, true, false, false, false},
-		{true, false, true, false, false, false, true, true},
-		{false, false, true, false, false, true, true, false},
-		{false, false, false, false, false, true, false, true},
-		{true, true, false, false, false, true, false, false},
-		{true, false, false, false, false, true, true, true},
-	}) {
-		t.Error("generated grid does not match test data")
+	cases := []struct {
+		text     string
+		mX       bool
+		mY       bool
+		expected [8][8]bool
+	}{
+		{
+			text: "jackwilsdon",
+			expected: [8][8]bool{
+				{true, false, true, false, true, true, true, true},
+				{true, false, true, true, false, true, true, true},
+				{false, false, false, false, true, false, false, false},
+				{true, false, true, false, false, false, true, true},
+				{false, false, true, false, false, true, true, false},
+				{false, false, false, false, false, true, false, true},
+				{true, true, false, false, false, true, false, false},
+				{true, false, false, false, false, true, true, true},
+			},
+		},
+		{
+			text: "jackwilsdon",
+			mX:   true,
+			expected: [8][8]bool{
+				{true, false, true, false, false, true, false, true},
+				{true, true, true, true, true, true, true, true},
+				{true, false, true, true, true, true, false, true},
+				{false, true, true, true, true, true, true, false},
+				{false, false, false, false, false, false, false, false},
+				{true, false, false, false, false, false, false, true},
+				{true, false, true, false, false, true, false, true},
+				{false, false, true, true, true, true, false, false},
+			},
+		},
+		{
+			text: "jackwilsdon",
+			mY:   true,
+			expected: [8][8]bool{
+				{true, false, true, false, true, true, true, true},
+				{true, false, true, true, false, true, true, true},
+				{false, false, false, false, true, false, false, false},
+				{true, false, true, false, false, false, true, true},
+				{true, false, true, false, false, false, true, true},
+				{false, false, false, false, true, false, false, false},
+				{true, false, true, true, false, true, true, true},
+				{true, false, true, false, true, true, true, true},
+			},
+		},
+		{
+			text: "jackwilsdon",
+			mX:   true,
+			mY:   true,
+			expected: [8][8]bool{
+				{true, false, true, false, false, true, false, true},
+				{true, true, true, true, true, true, true, true},
+				{true, false, true, true, true, true, false, true},
+				{false, true, true, true, true, true, true, false},
+				{false, true, true, true, true, true, true, false},
+				{true, false, true, true, true, true, false, true},
+				{true, true, true, true, true, true, true, true},
+				{true, false, true, false, false, true, false, true},
+			},
+		},
 	}
 
-	grid = ppic.Generate("jackwilsdon", true, false)
+	for i, c := range cases {
+		grid := ppic.Generate(c.text, c.mX, c.mY)
 
-	if !reflect.DeepEqual(grid, [8][8]bool{
-		{true, false, true, false, false, true, false, true},
-		{true, true, true, true, true, true, true, true},
-		{true, false, true, true, true, true, false, true},
-		{false, true, true, true, true, true, true, false},
-		{false, false, false, false, false, false, false, false},
-		{true, false, false, false, false, false, false, true},
-		{true, false, true, false, false, true, false, true},
-		{false, false, true, true, true, true, false, false},
-	}) {
-		t.Error("generated grid does not match test data")
-	}
-
-	grid = ppic.Generate("jackwilsdon", false, true)
-
-	if !reflect.DeepEqual(grid, [8][8]bool{
-		{true, false, true, false, true, true, true, true},
-		{true, false, true, true, false, true, true, true},
-		{false, false, false, false, true, false, false, false},
-		{true, false, true, false, false, false, true, true},
-		{true, false, true, false, false, false, true, true},
-		{false, false, false, false, true, false, false, false},
-		{true, false, true, true, false, true, true, true},
-		{true, false, true, false, true, true, true, true},
-	}) {
-		t.Error("generated grid does not match test data")
-	}
-
-	grid = ppic.Generate("jackwilsdon", true, true)
-
-	if !reflect.DeepEqual(grid, [8][8]bool{
-		{true, false, true, false, false, true, false, true},
-		{true, true, true, true, true, true, true, true},
-		{true, false, true, true, true, true, false, true},
-		{false, true, true, true, true, true, true, false},
-		{false, true, true, true, true, true, true, false},
-		{true, false, true, true, true, true, false, true},
-		{true, true, true, true, true, true, true, true},
-		{true, false, true, false, false, true, false, true},
-	}) {
-		t.Error("generated grid does not match test data")
+		if !reflect.DeepEqual(grid, c.expected) {
+			t.Errorf("generated grid does not match test data for case %d", i)
+		}
 	}
 }
 
@@ -84,62 +96,78 @@ func BenchmarkGenerateImage(b *testing.B) {
 }
 
 func TestGenerateImage(t *testing.T) {
-	img, err := ppic.GenerateImage("jackwilsdon", 512, true, false)
-
-	if err != nil {
-		t.Fatalf("error returned: %s", err)
+	cases := []struct {
+		text  string
+		size  int
+		mX    bool
+		mY    bool
+		image [8][8]color.Color
+	}{
+		{
+			text: "jackwilsdon",
+			size: 512,
+			mX:   true,
+			image: [8][8]color.Color{
+				{color.Black, color.White, color.Black, color.White, color.White, color.Black, color.White, color.Black},
+				{color.Black, color.Black, color.Black, color.Black, color.Black, color.Black, color.Black, color.Black},
+				{color.Black, color.White, color.Black, color.Black, color.Black, color.Black, color.White, color.Black},
+				{color.White, color.Black, color.Black, color.Black, color.Black, color.Black, color.Black, color.White},
+				{color.White, color.White, color.White, color.White, color.White, color.White, color.White, color.White},
+				{color.Black, color.White, color.White, color.White, color.White, color.White, color.White, color.Black},
+				{color.Black, color.White, color.Black, color.White, color.White, color.Black, color.White, color.Black},
+				{color.White, color.White, color.Black, color.Black, color.Black, color.Black, color.White, color.White},
+			},
+		},
 	}
 
-	if img == nil {
-		t.Fatal("returned image is nil")
-	}
+	for i, c := range cases {
+		img, err := ppic.GenerateImage(c.text, c.size, c.mX, c.mY)
 
-	// Extract the image dimensions.
-	b := img.Bounds()
-	w := b.Dx()
-	h := b.Dy()
+		if err != nil {
+			t.Errorf("error returned for case %d: %s", i, err)
+			continue
+		}
 
-	if w != 512 {
-		t.Errorf("expected width to be 512 but got %d", w)
-	}
+		if img == nil {
+			t.Errorf("returned image is nil for case %d", i)
+			continue
+		}
 
-	if h != 512 {
-		t.Errorf("expected height to be 512 but got %d", h)
-	}
+		// Extract the image dimensions.
+		b := img.Bounds()
+		w := b.Dx()
+		h := b.Dy()
 
-	// We don't want to go any further if any of the dimensions are wrong.
-	if t.Failed() {
-		return
-	}
+		if w != c.size {
+			t.Errorf("expected width to be %d but got %d for case %d", c.size, w, i)
+		}
 
-	// A low resolution version of what we expect the image to look like.
-	data := [8][8]color.Color{
-		{color.Black, color.White, color.Black, color.White, color.White, color.Black, color.White, color.Black},
-		{color.Black, color.Black, color.Black, color.Black, color.Black, color.Black, color.Black, color.Black},
-		{color.Black, color.White, color.Black, color.Black, color.Black, color.Black, color.White, color.Black},
-		{color.White, color.Black, color.Black, color.Black, color.Black, color.Black, color.Black, color.White},
-		{color.White, color.White, color.White, color.White, color.White, color.White, color.White, color.White},
-		{color.Black, color.White, color.White, color.White, color.White, color.White, color.White, color.Black},
-		{color.Black, color.White, color.Black, color.White, color.White, color.Black, color.White, color.Black},
-		{color.White, color.White, color.Black, color.Black, color.Black, color.Black, color.White, color.White},
-	}
+		if h != c.size {
+			t.Errorf("expected height to be %d but got %d for case %d", c.size, h, i)
+		}
 
-	// Pixel size is image size / 8 (the size of the actual grid).
-	pSize := 512 / 8
+		// We don't want to go any further if any of the dimensions are wrong.
+		if t.Failed() {
+			continue
+		}
 
-	// Compare the image data to the low resolution version.
-	for y, row := range data {
-		for x, val := range row {
-			// Get the color at the corresponding pixel.
-			c := img.At(x*pSize, y*pSize)
+		// Pixel size is image size / 8 (the size of the actual grid).
+		pSize := c.size / 8
 
-			// Get the expected and actual RGBA values for the pixel.
-			eR, eG, eB, eA := val.RGBA()
-			r, g, b, a := c.RGBA()
+		// Compare the image data to the low resolution version.
+		for y, row := range c.image {
+			for x, val := range row {
+				// Get the color at the corresponding pixel.
+				c := img.At(x*pSize, y*pSize)
 
-			// Ensure that everything matches up.
-			if eR != r || eG != g || eB != b || eA != a {
-				t.Errorf("expected (%d, %d) to be [%d, %d, %d, %d] but got [%d, %d, %d, %d]", x*pSize, y*pSize, eR, eG, eB, eA, r, g, b, a)
+				// Get the expected and actual RGBA values for the pixel.
+				eR, eG, eB, eA := val.RGBA()
+				r, g, b, a := c.RGBA()
+
+				// Ensure that everything matches up.
+				if eR != r || eG != g || eB != b || eA != a {
+					t.Errorf("expected (%d, %d) to be [%d, %d, %d, %d] but got [%d, %d, %d, %d] for case %d", x*pSize, y*pSize, eR, eG, eB, eA, r, g, b, a, i)
+				}
 			}
 		}
 	}
