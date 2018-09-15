@@ -38,7 +38,9 @@ func rect(img image.Paletted, x, y, size int, c uint8) {
 }
 
 // Generate returns an 8x8 grid of values based on the provided source text, optionally mirrored on the X or Y axis.
-func Generate(k string, mX, mY bool) (d [8][8]bool) {
+func Generate(k string, mX, mY bool) [8][8]bool {
+	var d [8][8]bool
+
 	w := len(d[0])
 	h := len(d)
 
@@ -107,7 +109,7 @@ func Generate(k string, mX, mY bool) (d [8][8]bool) {
 		}
 	}
 
-	return
+	return d
 }
 
 // GenerateImage returns an image for the specified source text, optionally mirrored on the X or Y axis.
