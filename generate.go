@@ -24,14 +24,14 @@ func hashString(s string) int64 {
 	return int64(binary.BigEndian.Uint64(m.Sum(nil)))
 }
 
-// white draws a rectangle on the provided surface.
-func white(img image.Gray, x, y, size int) {
+// rect draws a rectangle on the provided surface.
+func rect(img image.Paletted, x, y, size int, c uint8) {
 	x *= size
 	y *= size
 
 	for cY := y; cY < y+size; cY++ {
 		for cX := x; cX < x+size; cX++ {
-			img.Pix[(cY-img.Rect.Min.Y)*img.Stride+(cX-img.Rect.Min.X)] = 0xFF
+			img.Pix[(cY-img.Rect.Min.Y)*img.Stride+(cX-img.Rect.Min.X)] = c
 		}
 	}
 }
@@ -110,7 +110,7 @@ func Generate(k string, mX, mY bool) (d [8][8]bool) {
 }
 
 // GenerateImage returns an image for the specified source text, optionally mirrored on the X or Y axis.
-func GenerateImage(k string, size int, mX, mY bool) (image.Image, error) {
+func GenerateImage(k string, size int, mX, mY bool, p Palette) (image.Image, error) {
 	if size%8 != 0 {
 		return nil, ErrInvalidSize
 	}
@@ -119,16 +119,21 @@ func GenerateImage(k string, size int, mX, mY bool) (image.Image, error) {
 	pSize := size / 8
 
 	// Create the image and image data.
-	img := image.NewGray(image.Rect(0, 0, size, size))
+	img := image.NewPaletted(image.Rect(0, 0, size, size), p.Palette())
 	grid := Generate(k, mX, mY)
 
 	// Draw the image data onto the image.
 	for y, row := range grid {
 		for x, val := range row {
-			if !val {
-				// Draw the pixel.
-				white(*img, x, y, pSize)
+			var c uint8
+
+			// We're drawing the foreground if the value is set.
+			if val {
+				c = 1
 			}
+
+			// Draw the pixel.
+			rect(*img, x, y, pSize, uint8(c))
 		}
 	}
 

@@ -89,24 +89,28 @@ func TestGenerate(t *testing.T) {
 
 func BenchmarkGenerateImage(b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		if _, err := ppic.GenerateImage("jackwilsdon", 512, false, false); err != nil {
+		if _, err := ppic.GenerateImage("jackwilsdon", 512, false, false, ppic.DefaultPalette); err != nil {
 			b.Errorf("error: %s", err)
 		}
 	}
 }
 
 func TestGenerateImage(t *testing.T) {
+	red := color.RGBA{R: 0xFF, A: 0xFF}
+
 	cases := []struct {
-		text  string
-		size  int
-		mX    bool
-		mY    bool
-		image [8][8]color.Color
+		text    string
+		size    int
+		mX      bool
+		mY      bool
+		palette ppic.Palette
+		image   [8][8]color.Color
 	}{
 		{
-			text: "jackwilsdon",
-			size: 512,
-			mX:   true,
+			text:    "jackwilsdon",
+			size:    512,
+			mX:      true,
+			palette: ppic.DefaultPalette,
 			image: [8][8]color.Color{
 				{color.Black, color.White, color.Black, color.White, color.White, color.Black, color.White, color.Black},
 				{color.Black, color.Black, color.Black, color.Black, color.Black, color.Black, color.Black, color.Black},
@@ -118,10 +122,26 @@ func TestGenerateImage(t *testing.T) {
 				{color.White, color.White, color.Black, color.Black, color.Black, color.Black, color.White, color.White},
 			},
 		},
+		{
+			text:    "jackwilsdon",
+			size:    512,
+			mX:      true,
+			palette: ppic.Palette{Foreground: red, Background: color.Black},
+			image: [8][8]color.Color{
+				{red, color.Black, red, color.Black, color.Black, red, color.Black, red},
+				{red, red, red, red, red, red, red, red},
+				{red, color.Black, red, red, red, red, color.Black, red},
+				{color.Black, red, red, red, red, red, red, color.Black},
+				{color.Black, color.Black, color.Black, color.Black, color.Black, color.Black, color.Black, color.Black},
+				{red, color.Black, color.Black, color.Black, color.Black, color.Black, color.Black, red},
+				{red, color.Black, red, color.Black, color.Black, red, color.Black, red},
+				{color.Black, color.Black, red, red, red, red, color.Black, color.Black},
+			},
+		},
 	}
 
 	for i, c := range cases {
-		img, err := ppic.GenerateImage(c.text, c.size, c.mX, c.mY)
+		img, err := ppic.GenerateImage(c.text, c.size, c.mX, c.mY, c.palette)
 
 		if err != nil {
 			t.Errorf("error returned for case %d: %s", i, err)
@@ -174,7 +194,7 @@ func TestGenerateImage(t *testing.T) {
 }
 
 func TestGenerateImageWithInvalidSize(t *testing.T) {
-	_, err := ppic.GenerateImage("jackwilsdon", 31, true, false)
+	_, err := ppic.GenerateImage("jackwilsdon", 31, true, false, ppic.DefaultPalette)
 
 	// Make sure we get the right error.
 	if err == nil || err != ppic.ErrInvalidSize {

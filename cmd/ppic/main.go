@@ -42,7 +42,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	img, err := ppic.GenerateImage(txt, size, true, false)
+	img, err := ppic.GenerateImage(txt, size, true, false, ppic.DefaultPalette)
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s: failed to generate image: %s\n", cmd, err)

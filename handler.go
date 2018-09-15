@@ -86,7 +86,7 @@ func Handler(res http.ResponseWriter, req *http.Request) {
 
 	// Get the path without extension.
 	txt := strings.TrimSuffix(req.URL.Path[1:], path.Ext(req.URL.Path))
-	img, err := GenerateImage(txt, size, true, false)
+	img, err := GenerateImage(txt, size, true, false, DefaultPalette)
 
 	// Check if an invalid size was specified.
 	if err == ErrInvalidSize {
