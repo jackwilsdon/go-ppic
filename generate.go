@@ -8,6 +8,7 @@ import (
 	"image"
 	"math"
 	"math/rand"
+	"sync"
 )
 
 // ErrInvalidSize is an error caused by specifying a size which is not a multiple of 8.
@@ -122,6 +123,12 @@ func GenerateImage(k string, size int, mX, mY bool, p Palette) (image.Image, err
 	img := image.NewPaletted(image.Rect(0, 0, size, size), p.Palette())
 	grid := Generate(k, mX, mY)
 
+	// Create a wait group so we can wait for all of our goroutines to finish.
+	wg := sync.WaitGroup{}
+
+	// There are going to be 64 goroutines (it's an 8x8 image).
+	wg.Add(64)
+
 	// Draw the image data onto the image.
 	for y, row := range grid {
 		for x, val := range row {
@@ -133,9 +140,15 @@ func GenerateImage(k string, size int, mX, mY bool, p Palette) (image.Image, err
 			}
 
 			// Draw the pixel.
-			rect(*img, x, y, pSize, uint8(c))
+			go func(x, y int, c uint8) {
+				rect(*img, x, y, pSize, uint8(c))
+				wg.Done()
+			}(x, y, c)
 		}
 	}
+
+	// Wait for all of the goroutines to finish.
+	wg.Wait()
 
 	return img, nil
 }
