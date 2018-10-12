@@ -153,7 +153,7 @@ func GenerateImage(k string, size int, mX, mY bool, p Palette) (image.Image, err
 
 			// Draw the pixel.
 			go func(x, y int, c uint8) {
-				rect(*img, x, y, pSize, uint8(c))
+				rect(*img, x, y, pSize, c)
 				wg.Done()
 			}(x, y, c)
 		}
