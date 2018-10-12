@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/jackwilsdon/go-ppic"
-	"github.com/tmthrgd/gziphandler"
 	"net/http"
 	"net/http/pprof"
 	"os"
 	"strconv"
+
+	"github.com/jackwilsdon/go-ppic"
+	"github.com/tmthrgd/gziphandler"
 )
 
 func main() {

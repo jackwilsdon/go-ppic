@@ -2,7 +2,6 @@ package ppic_test
 
 import (
 	"bytes"
-	"github.com/jackwilsdon/go-ppic"
 	"image"
 	"image/color"
 	_ "image/gif"
@@ -12,6 +11,8 @@ import (
 	"net/http/httptest"
 	"testing"
 	"unicode"
+
+	"github.com/jackwilsdon/go-ppic"
 )
 
 func isPrintable(s string) bool {

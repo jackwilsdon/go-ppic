@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/jackwilsdon/go-ppic"
 	"image/png"
 	"os"
 	"path"
 	"strconv"
 	"strings"
+
+	"github.com/jackwilsdon/go-ppic"
 )
 
 var cmd = path.Base(os.Args[0])

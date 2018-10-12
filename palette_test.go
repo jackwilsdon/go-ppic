@@ -1,9 +1,10 @@
 package ppic_test
 
 import (
-	"github.com/jackwilsdon/go-ppic"
 	"image/color"
 	"testing"
+
+	"github.com/jackwilsdon/go-ppic"
 )
 
 func TestPalette(t *testing.T) {

@@ -1,10 +1,11 @@
 package ppic_test
 
 import (
-	"github.com/jackwilsdon/go-ppic"
 	"image/color"
 	"reflect"
 	"testing"
+
+	"github.com/jackwilsdon/go-ppic"
 )
 
 func BenchmarkGenerate(b *testing.B) {
