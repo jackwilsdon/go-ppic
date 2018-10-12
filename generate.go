@@ -69,7 +69,17 @@ func Generate(k string, mX, mY bool) [8][8]bool {
 	b := make([]byte, bc)
 
 	// Fill in our buffer with some random data.
-	rnd.Read(b)
+	r, err := rnd.Read(b)
+
+	// The default source should never throw an error.
+	if err != nil {
+		panic(fmt.Sprintf("failed to get random data: %s", err))
+	}
+
+	// The default source should always return the requested number of bytes.
+	if r != bc {
+		panic(fmt.Sprintf("failed to get random data: expected %d bytes but got %d", bc, r))
+	}
 
 	// Populate the left half of the image.
 	for i := 0; i < pc; i++ {
