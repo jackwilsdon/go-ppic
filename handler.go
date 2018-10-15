@@ -14,8 +14,8 @@ import (
 	"strings"
 )
 
-// imageEncoder represents a function which can encode an image.
-type imageEncoder func(io.Writer, image.Image) error
+// imageWriter represents a function which can write an image to a writer.
+type imageWriter func(io.Writer, image.Image) error
 
 // getImageSize extracts an image size from a set of URL values.
 func getImageSize(q url.Values) (int, error) {
@@ -34,8 +34,8 @@ func getImageSize(q url.Values) (int, error) {
 	return s, nil
 }
 
-// getImageEncoder returns an imageEncoder for the specified path.
-func getImageEncoder(p string) imageEncoder {
+// getImageWriter returns an imageWriter for the specified path.
+func getImageWriter(p string) imageWriter {
 	ext := path.Ext(p)
 
 	switch strings.ToLower(ext) {
@@ -67,10 +67,10 @@ func Handler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	encoder := getImageEncoder(req.URL.Path)
+	writer := getImageWriter(req.URL.Path)
 
-	// If we couldn't find an encoder then we couldn't understand the extension.
-	if encoder == nil {
+	// If we couldn't find a writer then we couldn't understand the extension.
+	if writer == nil {
 		res.WriteHeader(http.StatusNotFound)
 		fmt.Fprintf(res, "error: unsupported file format")
 		return
@@ -102,7 +102,8 @@ func Handler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if err = encoder(res, img); err != nil {
+	// Write the image to the response.
+	if err = writer(res, img); err != nil {
 		fmt.Fprintf(res, "error: %s", err)
 	}
 }
