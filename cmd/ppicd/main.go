@@ -1,22 +1,32 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net/http"
 	"net/http/pprof"
 	"os"
-	"strconv"
 
 	"github.com/jackwilsdon/go-ppic"
 	"github.com/tmthrgd/gziphandler"
 )
 
 func main() {
+	// Build a list of the flags we support.
+	host := flag.String("h", "", "host to run the server on")
+	port := flag.Uint("p", 3000, "port to run the server on")
+	debug := flag.Bool("d", false, "enable pprof debug routes")
+	gzip := flag.Bool("z", false, "enable gzip compression")
+
+	// Parse the command-line flags.
+	flag.Parse()
+
+	// Create a new server with our handler.
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", ppic.Handler)
 
-	// Enable profiling URLs if the debug option is set.
-	if os.Getenv("DEBUG") == "1" {
+	// Enable pprof debug routes if the debug flag is set.
+	if *debug {
 		mux.HandleFunc("/debug/pprof/", pprof.Index)
 		mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
 		mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
@@ -24,29 +34,15 @@ func main() {
 		mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
 	}
 
-	host := os.Getenv("HOST")
-	port := 3000
-
-	// Make sure we have a valid port.
-	if portString, ok := os.LookupEnv("PORT"); ok {
-		var err error
-
-		port, err = strconv.Atoi(portString)
-
-		if _, isNum := err.(*strconv.NumError); isNum {
-			fmt.Fprintf(os.Stderr, "error: invalid port\n")
-			os.Exit(1)
-		}
-	}
-
 	var handler http.Handler = mux
 
-	// Enable GZIP if it's not disabled.
-	if os.Getenv("GZIP") != "0" {
-		handler = gziphandler.Gzip(mux)
+	// Enable gzip compression if the gzip flag is set.
+	if *gzip {
+		handler = gziphandler.Gzip(handler)
 	}
 
-	addr := fmt.Sprintf("%s:%d", host, port)
+	// Build the address from the host and port.
+	addr := fmt.Sprintf("%s:%d", *host, *port)
 
 	if err := http.ListenAndServe(addr, handler); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %s\n", err)
