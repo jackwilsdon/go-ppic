@@ -40,7 +40,7 @@ go get -u github.com/jackwilsdon/go-ppic/cmd/ppicd
 
 ### Usage
 
-```Shell
+```Text
   -d	enable pprof debug routes
   -h string
     	host to run the server on
