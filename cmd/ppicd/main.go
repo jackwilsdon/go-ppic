@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net"
 	"net/http"
 	"net/http/pprof"
 	"os"
@@ -10,6 +11,24 @@ import (
 	"github.com/jackwilsdon/go-ppic"
 	"github.com/tmthrgd/gziphandler"
 )
+
+// addressToString converts an address to a string (who'd have thought!).
+// This method will use "127.0.0.1" if the IP is unspecified.
+func addressToString(addr net.Addr) string {
+	tcp, isTCP := addr.(*net.TCPAddr)
+
+	if !isTCP {
+		return "unknown"
+	}
+
+	ip := tcp.IP.String()
+
+	if tcp.IP.IsUnspecified() {
+		ip = "127.0.0.1"
+	}
+
+	return fmt.Sprintf("%s:%d", ip, tcp.Port)
+}
 
 func main() {
 	// Build a list of the flags we support.
@@ -44,7 +63,18 @@ func main() {
 	// Build the address from the host and port.
 	addr := fmt.Sprintf("%s:%d", *host, *port)
 
-	if err := http.ListenAndServe(addr, handler); err != nil {
-		fmt.Fprintf(os.Stderr, "error: %s\n", err)
+	// Manually create the listener so we can work out what port it's on.
+	listener, err := net.Listen("tcp", addr)
+
+	if err != nil {
+		log.Fatalf("error: %s\n", err)
+	}
+
+	log.Printf("Starting server on http://%s...\n", addressToString(listener.Addr()))
+
+	// Start serving on the listener.
+	if err := http.Serve(listener, handler); err != nil {
+		log.Fatalf("error: %s\n", err)
+		os.Exit(1)
 	}
 }
