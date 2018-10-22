@@ -41,12 +41,13 @@ go get -u github.com/jackwilsdon/go-ppic/cmd/ppicd
 ### Usage
 
 ```Shell
-  -d    enable pprof debug routes
+  -d	enable pprof debug routes
   -h string
-        host to run the server on
+    	host to run the server on
   -p uint
-        port to run the server on (default 3000)
-  -z    enable gzip compression
+    	port to run the server on (default 3000)
+  -v	enable verbose output
+  -z	enable gzip compression
 ```
 
 Once the server is running, you can retrieve an image by visiting `http://localhost:3000/image.png` (provided you haven't changed the port). Other supported file extensions are `.gif` and `.jpeg`, defaulting to `.png` if there is no file extension in the URL.

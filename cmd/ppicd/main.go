@@ -3,11 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"net/http/pprof"
 	"os"
 
+	"github.com/felixge/httpsnoop"
 	"github.com/jackwilsdon/go-ppic"
 	"github.com/tmthrgd/gziphandler"
 )
@@ -30,12 +32,24 @@ func addressToString(addr net.Addr) string {
 	return fmt.Sprintf("%s:%d", ip, tcp.Port)
 }
 
+// withLogger wraps the specified handler in a logger and returns it.
+func withLogger(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		// Execute the handler and capture metrics.
+		m := httpsnoop.CaptureMetrics(h, res, req)
+
+		// Log the request.
+		log.Printf("%s %s - %d (%s)", req.Method, req.URL.RequestURI(), m.Code, m.Duration)
+	})
+}
+
 func main() {
 	// Build a list of the flags we support.
 	host := flag.String("h", "", "host to run the server on")
 	port := flag.Uint("p", 3000, "port to run the server on")
 	debug := flag.Bool("d", false, "enable pprof debug routes")
 	gzip := flag.Bool("z", false, "enable gzip compression")
+	verbose := flag.Bool("v", false, "enable verbose output")
 
 	// Parse the command-line flags.
 	flag.Parse()
@@ -71,6 +85,11 @@ func main() {
 	}
 
 	log.Printf("Starting server on http://%s...\n", addressToString(listener.Addr()))
+
+	// Wrap the handler in a logger if verbose mode is enabled.
+	if *verbose {
+		handler = withLogger(handler)
+	}
 
 	// Start serving on the listener.
 	if err := http.Serve(listener, handler); err != nil {
