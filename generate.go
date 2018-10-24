@@ -1,8 +1,6 @@
 package ppic
 
 import (
-	"crypto/sha256"
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"math"
@@ -11,17 +9,6 @@ import (
 
 // ErrInvalidSize is an error caused by specifying a size which is not a multiple of 8.
 var ErrInvalidSize = errors.New("size must be a multiple of 8")
-
-// hashString hashes the provided string into an integer.
-func hashString(s string) int64 {
-	m := sha256.New()
-
-	// Write our string to the MD5 hash calculator.
-	fmt.Fprint(m, s)
-
-	// Convert the first 8 bytes into a number.
-	return int64(binary.BigEndian.Uint64(m.Sum(nil)))
-}
 
 // Generate returns an 8x8 grid of values based on the provided source text, optionally mirrored on the X or Y axis.
 func Generate(k string, mX, mY bool) [8][8]bool {
