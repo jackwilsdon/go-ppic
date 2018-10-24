@@ -15,3 +15,18 @@ func (p Palette) Palette() color.Palette {
 
 // DefaultPalette is the default black and white color palette.
 var DefaultPalette = Palette{Foreground: color.Black, Background: color.White}
+
+// GeneratePalette generates a color palette from a string.
+func GeneratePalette(k string) Palette {
+	hsh := hashString(k) & 0xFFFFFF
+
+	return Palette{
+		Foreground: color.RGBA{
+			R: uint8(hsh >> 16),
+			G: uint8(hsh >> 8),
+			B: uint8(hsh),
+			A: 0xFF,
+		},
+		Background: color.White,
+	}
+}
