@@ -76,7 +76,10 @@ func Handler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	size, err := getImageSize(req.URL.Query())
+	q := req.URL.Query()
+
+	// Get the image size from the request.
+	size, err := getImageSize(q)
 
 	if err != nil {
 		res.WriteHeader(http.StatusBadRequest)
@@ -86,7 +89,16 @@ func Handler(res http.ResponseWriter, req *http.Request) {
 
 	// Get the path without extension.
 	txt := strings.TrimSuffix(req.URL.Path[1:], path.Ext(req.URL.Path))
-	img, err := GenerateImage(txt, size, true, false, DefaultPalette)
+
+	pal := DefaultPalette
+
+	// Generate a palette based on the source text if we're not in monochrome mode.
+	if _, mono := q["monochrome"]; !mono {
+		pal = GeneratePalette(txt)
+	}
+
+	// Generate the image.
+	img, err := GenerateImage(txt, size, true, false, pal)
 
 	// Check if an invalid size was specified.
 	if err == ErrInvalidSize {

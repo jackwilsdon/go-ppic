@@ -232,72 +232,151 @@ func TestHandlerSize(t *testing.T) {
 }
 
 func TestHandler(t *testing.T) {
-	req, err := http.NewRequest(http.MethodGet, "/jackwilsdon", nil)
+	monoPal := ppic.DefaultPalette
 
-	if err != nil {
-		t.Errorf("http.NewRequest: %s", err)
-		return
+	jwPal := ppic.Palette{
+		Foreground: color.RGBA{R: 0xEA, G: 0xE3, B: 0xA4, A: 0xFF},
+		Background: color.White,
 	}
 
-	rec := httptest.NewRecorder()
-
-	ppic.Handler(rec, req)
-
-	res := rec.Result()
-
-	// Try and decode the image in the response.
-	img, _, err := image.Decode(res.Body)
-
-	if err != nil {
-		t.Fatalf("error returned: %s", err)
+	testPal := ppic.Palette{
+		Foreground: color.RGBA{R: 0xCF, G: 0xC6, B: 0x85, A: 0xFF},
+		Background: color.White,
 	}
 
-	// Extract the image dimensions.
-	b := img.Bounds()
-	w := b.Dx()
-	h := b.Dy()
-
-	if w != 512 {
-		t.Errorf("expected width to be 512 but got %d", w)
+	cases := []struct {
+		path  string
+		size  int
+		image [8][8]color.Color
+	}{
+		{
+			path: "/jackwilsdon",
+			size: 512,
+			image: [8][8]color.Color{
+				{jwPal.Foreground, jwPal.Background, jwPal.Foreground, jwPal.Background, jwPal.Background, jwPal.Foreground, jwPal.Background, jwPal.Foreground},
+				{jwPal.Foreground, jwPal.Foreground, jwPal.Foreground, jwPal.Foreground, jwPal.Foreground, jwPal.Foreground, jwPal.Foreground, jwPal.Foreground},
+				{jwPal.Foreground, jwPal.Background, jwPal.Foreground, jwPal.Foreground, jwPal.Foreground, jwPal.Foreground, jwPal.Background, jwPal.Foreground},
+				{jwPal.Background, jwPal.Foreground, jwPal.Foreground, jwPal.Foreground, jwPal.Foreground, jwPal.Foreground, jwPal.Foreground, jwPal.Background},
+				{jwPal.Background, jwPal.Background, jwPal.Background, jwPal.Background, jwPal.Background, jwPal.Background, jwPal.Background, jwPal.Background},
+				{jwPal.Foreground, jwPal.Background, jwPal.Background, jwPal.Background, jwPal.Background, jwPal.Background, jwPal.Background, jwPal.Foreground},
+				{jwPal.Foreground, jwPal.Background, jwPal.Foreground, jwPal.Background, jwPal.Background, jwPal.Foreground, jwPal.Background, jwPal.Foreground},
+				{jwPal.Background, jwPal.Background, jwPal.Foreground, jwPal.Foreground, jwPal.Foreground, jwPal.Foreground, jwPal.Background, jwPal.Background},
+			},
+		},
+		{
+			path: "/jackwilsdon?monochrome",
+			size: 512,
+			image: [8][8]color.Color{
+				{monoPal.Foreground, monoPal.Background, monoPal.Foreground, monoPal.Background, monoPal.Background, monoPal.Foreground, monoPal.Background, monoPal.Foreground},
+				{monoPal.Foreground, monoPal.Foreground, monoPal.Foreground, monoPal.Foreground, monoPal.Foreground, monoPal.Foreground, monoPal.Foreground, monoPal.Foreground},
+				{monoPal.Foreground, monoPal.Background, monoPal.Foreground, monoPal.Foreground, monoPal.Foreground, monoPal.Foreground, monoPal.Background, monoPal.Foreground},
+				{monoPal.Background, monoPal.Foreground, monoPal.Foreground, monoPal.Foreground, monoPal.Foreground, monoPal.Foreground, monoPal.Foreground, monoPal.Background},
+				{monoPal.Background, monoPal.Background, monoPal.Background, monoPal.Background, monoPal.Background, monoPal.Background, monoPal.Background, monoPal.Background},
+				{monoPal.Foreground, monoPal.Background, monoPal.Background, monoPal.Background, monoPal.Background, monoPal.Background, monoPal.Background, monoPal.Foreground},
+				{monoPal.Foreground, monoPal.Background, monoPal.Foreground, monoPal.Background, monoPal.Background, monoPal.Foreground, monoPal.Background, monoPal.Foreground},
+				{monoPal.Background, monoPal.Background, monoPal.Foreground, monoPal.Foreground, monoPal.Foreground, monoPal.Foreground, monoPal.Background, monoPal.Background},
+			},
+		},
+		{
+			path: "/testing123",
+			size: 512,
+			image: [8][8]color.Color{
+				{testPal.Background, testPal.Background, testPal.Foreground, testPal.Foreground, testPal.Foreground, testPal.Foreground, testPal.Background, testPal.Background},
+				{testPal.Background, testPal.Foreground, testPal.Foreground, testPal.Background, testPal.Background, testPal.Foreground, testPal.Foreground, testPal.Background},
+				{testPal.Background, testPal.Foreground, testPal.Foreground, testPal.Foreground, testPal.Foreground, testPal.Foreground, testPal.Foreground, testPal.Background},
+				{testPal.Foreground, testPal.Background, testPal.Foreground, testPal.Background, testPal.Background, testPal.Foreground, testPal.Background, testPal.Foreground},
+				{testPal.Foreground, testPal.Background, testPal.Background, testPal.Foreground, testPal.Foreground, testPal.Background, testPal.Background, testPal.Foreground},
+				{testPal.Background, testPal.Background, testPal.Background, testPal.Foreground, testPal.Foreground, testPal.Background, testPal.Background, testPal.Background},
+				{testPal.Background, testPal.Background, testPal.Background, testPal.Background, testPal.Background, testPal.Background, testPal.Background, testPal.Background},
+				{testPal.Foreground, testPal.Background, testPal.Background, testPal.Foreground, testPal.Foreground, testPal.Background, testPal.Background, testPal.Foreground},
+			},
+		},
+		{
+			path: "/testing123?monochrome",
+			size: 512,
+			image: [8][8]color.Color{
+				{monoPal.Background, monoPal.Background, monoPal.Foreground, monoPal.Foreground, monoPal.Foreground, monoPal.Foreground, monoPal.Background, monoPal.Background},
+				{monoPal.Background, monoPal.Foreground, monoPal.Foreground, monoPal.Background, monoPal.Background, monoPal.Foreground, monoPal.Foreground, monoPal.Background},
+				{monoPal.Background, monoPal.Foreground, monoPal.Foreground, monoPal.Foreground, monoPal.Foreground, monoPal.Foreground, monoPal.Foreground, monoPal.Background},
+				{monoPal.Foreground, monoPal.Background, monoPal.Foreground, monoPal.Background, monoPal.Background, monoPal.Foreground, monoPal.Background, monoPal.Foreground},
+				{monoPal.Foreground, monoPal.Background, monoPal.Background, monoPal.Foreground, monoPal.Foreground, monoPal.Background, monoPal.Background, monoPal.Foreground},
+				{monoPal.Background, monoPal.Background, monoPal.Background, monoPal.Foreground, monoPal.Foreground, monoPal.Background, monoPal.Background, monoPal.Background},
+				{monoPal.Background, monoPal.Background, monoPal.Background, monoPal.Background, monoPal.Background, monoPal.Background, monoPal.Background, monoPal.Background},
+				{monoPal.Foreground, monoPal.Background, monoPal.Background, monoPal.Foreground, monoPal.Foreground, monoPal.Background, monoPal.Background, monoPal.Foreground},
+			},
+		},
 	}
 
-	if h != 512 {
-		t.Errorf("expected height to be 512 but got %d", h)
-	}
+	for i, c := range cases {
+		req, err := http.NewRequest(http.MethodGet, c.path, nil)
 
-	// We don't want to go any further if any of the dimensions are wrong.
-	if t.Failed() {
-		return
-	}
+		if err != nil {
+			t.Errorf("http.NewRequest: %s for case %d", err, i)
+			continue
+		}
 
-	// A low resolution version of what we expect the image to look like.
-	data := [8][8]color.Color{
-		{color.Black, color.White, color.Black, color.White, color.White, color.Black, color.White, color.Black},
-		{color.Black, color.Black, color.Black, color.Black, color.Black, color.Black, color.Black, color.Black},
-		{color.Black, color.White, color.Black, color.Black, color.Black, color.Black, color.White, color.Black},
-		{color.White, color.Black, color.Black, color.Black, color.Black, color.Black, color.Black, color.White},
-		{color.White, color.White, color.White, color.White, color.White, color.White, color.White, color.White},
-		{color.Black, color.White, color.White, color.White, color.White, color.White, color.White, color.Black},
-		{color.Black, color.White, color.Black, color.White, color.White, color.Black, color.White, color.Black},
-		{color.White, color.White, color.Black, color.Black, color.Black, color.Black, color.White, color.White},
-	}
+		rec := httptest.NewRecorder()
 
-	// Pixel size is image size / 8 (the size of the actual grid).
-	pSize := 512 / 8
+		ppic.Handler(rec, req)
 
-	// Compare the image data to the low resolution version.
-	for y, row := range data {
-		for x, val := range row {
-			// Get the color at the corresponding pixel.
-			c := img.At(x*pSize, y*pSize)
+		res := rec.Result()
 
-			// Get the expected and actual RGBA values for the pixel.
-			eR, eG, eB, eA := val.RGBA()
-			r, g, b, a := c.RGBA()
+		// Try and decode the image in the response.
+		img, _, err := image.Decode(res.Body)
 
-			// Ensure that everything matches up.
-			if eR != r || eG != g || eB != b || eA != a {
-				t.Errorf("expected (%d, %d) to be [%d, %d, %d, %d] but got [%d, %d, %d, %d]", x*pSize, y*pSize, eR, eG, eB, eA, r, g, b, a)
+		if err != nil {
+			t.Errorf("error returned: %s for case %d", err, i)
+			continue
+		}
+
+		// Extract the image dimensions.
+		b := img.Bounds()
+		w := b.Dx()
+		h := b.Dy()
+
+		if w != c.size {
+			t.Errorf("expected width to be %d but got %d for case %d", c.size, w, i)
+		}
+
+		if h != c.size {
+			t.Errorf("expected height to be %d but got %d for case %d", c.size, h, i)
+		}
+
+		// Don't carry on if the dimensions are wrong.
+		if w != c.size || h != c.size {
+			continue
+		}
+
+		// Pixel size is image size / 8 (the size of the actual grid).
+		pSize := c.size / 8
+
+		// Compare the image data to the low resolution version.
+		for y, row := range c.image {
+			for x, val := range row {
+				// Get the color at the corresponding pixel.
+				c := img.At(x*pSize, y*pSize)
+
+				// Get the expected and actual RGBA values for the pixel.
+				eR, eG, eB, eA := val.RGBA()
+				r, g, b, a := c.RGBA()
+
+				// Ensure that everything matches up.
+				if eR != r || eG != g || eB != b || eA != a {
+					t.Errorf(
+						"expected (%d, %d) to be %02X%02X%02X%02X but got %02X%02X%02X%02X for case %d",
+						x*pSize,
+						y*pSize,
+						uint8(eR),
+						uint8(eG),
+						uint8(eB),
+						uint8(eA),
+						uint8(r),
+						uint8(g),
+						uint8(b),
+						uint8(a),
+						i,
+					)
+				}
 			}
 		}
 	}
