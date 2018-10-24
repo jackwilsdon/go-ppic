@@ -2,31 +2,7 @@
 
 Profile picture generation service written in Go. A demo can be found at [ppic.now.sh](https://ppic.now.sh/hello).
 
-`go-ppic` provides two commands; [`ppic`](#ppic) and [`ppicd`](#ppicd).
-
-## ppic
-
-`ppic` is used to generate profile pictures on the command line, without having to run a web server. `ppic` outputs the generated image to stdout.
-
-### Installation
-
-```Shell
-go get -u github.com/jackwilsdon/go-ppic/cmd/ppic
-```
-
-### Usage
-
-```Text
-usage: ppic username [size] > image.png
-```
-
-> `size` defaults to 512 if not provided
-
-### Examples
-
-```Shell
-ppic jackwilsdon 1024 > profile.png
-```
+`go-ppic` provides two commands; [`ppicd`](#ppicd) and [`ppic`](#ppic).
 
 ## ppicd
 
@@ -72,3 +48,27 @@ By default the server will respond in PNG format, but it also supports the follo
 
  * `.gif`
  * `.jpeg`
+
+## ppic
+
+`ppic` is used to generate profile pictures on the command line, without having to run a web server. `ppic` outputs the generated image to stdout.
+
+### Installation
+
+```Shell
+go get -u github.com/jackwilsdon/go-ppic/cmd/ppic
+```
+
+### Usage
+
+```Text
+usage: ppic username [size] > image.png
+```
+
+> `size` defaults to 512 if not provided
+
+### Examples
+
+```Shell
+ppic jackwilsdon 1024 > profile.png
+```
