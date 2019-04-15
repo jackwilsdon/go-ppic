@@ -6,7 +6,8 @@ import (
 	"image"
 )
 
-func Compare(grid [8][8]bool, expected [8]string) error {
+// Validate the "expected" string for an 8x8 image.
+func validateExpected(expected [8]string) {
 	for y, row := range expected {
 		if l := len(row); l != 8 {
 			panic(fmt.Sprintf("len(expected[%d]) != 8 (got %d)", y, l))
@@ -18,6 +19,13 @@ func Compare(grid [8][8]bool, expected [8]string) error {
 			}
 		}
 	}
+}
+
+// Compare an 8x8 grid to an expected image.
+//
+// Expected image must be 8 lines, each consisting of 8 characters.
+func Compare(grid [8][8]bool, expected [8]string) error {
+	validateExpected(expected)
 
 	for y := range grid {
 		for x := range grid[y] {
@@ -32,6 +40,9 @@ func Compare(grid [8][8]bool, expected [8]string) error {
 	return nil
 }
 
+// Compare an image to an expected image.
+//
+// Expected image must be 8 lines, each consisting of 8 characters.
 func CompareImage(img image.Image, expectedPal ppic.Palette, expected [8]string) error {
 	if expectedPal.Foreground == nil {
 		panic("expectedPal.Foreground is nil")
@@ -41,17 +52,7 @@ func CompareImage(img image.Image, expectedPal ppic.Palette, expected [8]string)
 		panic("expectedPal.Background is nil")
 	}
 
-	for y, row := range expected {
-		if l := len(row); l != 8 {
-			panic(fmt.Sprintf("len(expected[%d]) != 8 (got %d)", y, l))
-		}
-
-		for x, c := range row {
-			if c != '#' && c != ' ' {
-				panic(fmt.Sprintf("expected[%d][%d] is not '#' or ' ' (got %q)", y, x, c))
-			}
-		}
-	}
+	validateExpected(expected)
 
 	if img == nil {
 		return fmt.Errorf("image is nil")
