@@ -10,7 +10,7 @@ import (
 func hashString(s string) int64 {
 	m := sha256.New()
 
-	// Write our string to the MD5 hash calculator.
+	// Write our string to the SHA256 hash calculator.
 	fmt.Fprint(m, s)
 
 	// Convert the first 8 bytes into a number.
