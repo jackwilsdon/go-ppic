@@ -1,6 +1,7 @@
 package ppic_test
 
 import (
+	"github.com/jackwilsdon/go-ppic/ppictest"
 	"image/color"
 	"testing"
 
@@ -16,46 +17,44 @@ func BenchmarkGenerateImage(b *testing.B) {
 }
 
 func TestGenerateImage(t *testing.T) {
-	red := color.RGBA{R: 0xFF, A: 0xFF}
-
 	cases := []struct {
 		text    string
 		size    int
 		mX      bool
 		mY      bool
 		palette ppic.Palette
-		image   [8][8]color.Color
+		image   [8]string
 	}{
 		{
 			text:    "jackwilsdon",
 			size:    512,
 			mX:      true,
 			palette: ppic.DefaultPalette,
-			image: [8][8]color.Color{
-				{color.Black, color.White, color.Black, color.White, color.White, color.Black, color.White, color.Black},
-				{color.Black, color.Black, color.Black, color.Black, color.Black, color.Black, color.Black, color.Black},
-				{color.Black, color.White, color.Black, color.Black, color.Black, color.Black, color.White, color.Black},
-				{color.White, color.Black, color.Black, color.Black, color.Black, color.Black, color.Black, color.White},
-				{color.White, color.White, color.White, color.White, color.White, color.White, color.White, color.White},
-				{color.Black, color.White, color.White, color.White, color.White, color.White, color.White, color.Black},
-				{color.Black, color.White, color.Black, color.White, color.White, color.Black, color.White, color.Black},
-				{color.White, color.White, color.Black, color.Black, color.Black, color.Black, color.White, color.White},
+			image: [8]string{
+				"# #  # #",
+				"########",
+				"# #### #",
+				" ###### ",
+				"        ",
+				"#      #",
+				"# #  # #",
+				"  ####  ",
 			},
 		},
 		{
 			text:    "jackwilsdon",
 			size:    512,
 			mX:      true,
-			palette: ppic.Palette{Foreground: red, Background: color.Black},
-			image: [8][8]color.Color{
-				{red, color.Black, red, color.Black, color.Black, red, color.Black, red},
-				{red, red, red, red, red, red, red, red},
-				{red, color.Black, red, red, red, red, color.Black, red},
-				{color.Black, red, red, red, red, red, red, color.Black},
-				{color.Black, color.Black, color.Black, color.Black, color.Black, color.Black, color.Black, color.Black},
-				{red, color.Black, color.Black, color.Black, color.Black, color.Black, color.Black, red},
-				{red, color.Black, red, color.Black, color.Black, red, color.Black, red},
-				{color.Black, color.Black, red, red, red, red, color.Black, color.Black},
+			palette: ppic.Palette{Foreground: color.RGBA{R: 0xFF, A: 0xFF}, Background: color.Black},
+			image: [8]string{
+				"# #  # #",
+				"########",
+				"# #### #",
+				" ###### ",
+				"        ",
+				"#      #",
+				"# #  # #",
+				"  ####  ",
 			},
 		},
 	}
@@ -68,47 +67,10 @@ func TestGenerateImage(t *testing.T) {
 			continue
 		}
 
-		if img == nil {
-			t.Errorf("returned image is nil for case %d", i)
-			continue
-		}
+		err = ppictest.CompareImage(img, c.palette, c.image)
 
-		// Extract the image dimensions.
-		b := img.Bounds()
-		w := b.Dx()
-		h := b.Dy()
-
-		if w != c.size {
-			t.Errorf("expected width to be %d but got %d for case %d", c.size, w, i)
-		}
-
-		if h != c.size {
-			t.Errorf("expected height to be %d but got %d for case %d", c.size, h, i)
-		}
-
-		// We don't want to go any further if any of the dimensions are wrong.
-		if t.Failed() {
-			continue
-		}
-
-		// Pixel size is image size / 8 (the size of the actual grid).
-		pSize := c.size / 8
-
-		// Compare the image data to the low resolution version.
-		for y, row := range c.image {
-			for x, val := range row {
-				// Get the color at the corresponding pixel.
-				c := img.At(x*pSize, y*pSize)
-
-				// Get the expected and actual RGBA values for the pixel.
-				eR, eG, eB, eA := val.RGBA()
-				r, g, b, a := c.RGBA()
-
-				// Ensure that everything matches up.
-				if eR != r || eG != g || eB != b || eA != a {
-					t.Errorf("expected (%d, %d) to be [%d, %d, %d, %d] but got [%d, %d, %d, %d] for case %d", x*pSize, y*pSize, eR, eG, eB, eA, r, g, b, a, i)
-				}
-			}
+		if err != nil {
+			t.Errorf("%s for case %d", err, i)
 		}
 	}
 }

@@ -1,7 +1,7 @@
 package ppic_test
 
 import (
-	"reflect"
+	"github.com/jackwilsdon/go-ppic/ppictest"
 	"testing"
 
 	"github.com/jackwilsdon/go-ppic"
@@ -18,62 +18,62 @@ func TestGenerate(t *testing.T) {
 		text     string
 		mX       bool
 		mY       bool
-		expected [8][8]bool
+		expected [8]string
 	}{
 		{
 			text: "jackwilsdon",
-			expected: [8][8]bool{
-				{true, false, true, false, true, true, true, true},
-				{true, false, true, true, false, true, true, true},
-				{false, false, false, false, true, false, false, false},
-				{true, false, true, false, false, false, true, true},
-				{false, false, true, false, false, true, true, false},
-				{false, false, false, false, false, true, false, true},
-				{true, true, false, false, false, true, false, false},
-				{true, false, false, false, false, true, true, true},
+			expected: [8]string{
+				"# # ####",
+				"# ## ###",
+				"    #   ",
+				"# #   ##",
+				"  #  ## ",
+				"     # #",
+				"##   #  ",
+				"#    ###",
 			},
 		},
 		{
 			text: "jackwilsdon",
 			mX:   true,
-			expected: [8][8]bool{
-				{true, false, true, false, false, true, false, true},
-				{true, true, true, true, true, true, true, true},
-				{true, false, true, true, true, true, false, true},
-				{false, true, true, true, true, true, true, false},
-				{false, false, false, false, false, false, false, false},
-				{true, false, false, false, false, false, false, true},
-				{true, false, true, false, false, true, false, true},
-				{false, false, true, true, true, true, false, false},
+			expected: [8]string{
+				"# #  # #",
+				"########",
+				"# #### #",
+				" ###### ",
+				"        ",
+				"#      #",
+				"# #  # #",
+				"  ####  ",
 			},
 		},
 		{
 			text: "jackwilsdon",
 			mY:   true,
-			expected: [8][8]bool{
-				{true, false, true, false, true, true, true, true},
-				{true, false, true, true, false, true, true, true},
-				{false, false, false, false, true, false, false, false},
-				{true, false, true, false, false, false, true, true},
-				{true, false, true, false, false, false, true, true},
-				{false, false, false, false, true, false, false, false},
-				{true, false, true, true, false, true, true, true},
-				{true, false, true, false, true, true, true, true},
+			expected: [8]string{
+				"# # ####",
+				"# ## ###",
+				"    #   ",
+				"# #   ##",
+				"# #   ##",
+				"    #   ",
+				"# ## ###",
+				"# # ####",
 			},
 		},
 		{
 			text: "jackwilsdon",
 			mX:   true,
 			mY:   true,
-			expected: [8][8]bool{
-				{true, false, true, false, false, true, false, true},
-				{true, true, true, true, true, true, true, true},
-				{true, false, true, true, true, true, false, true},
-				{false, true, true, true, true, true, true, false},
-				{false, true, true, true, true, true, true, false},
-				{true, false, true, true, true, true, false, true},
-				{true, true, true, true, true, true, true, true},
-				{true, false, true, false, false, true, false, true},
+			expected: [8]string{
+				"# #  # #",
+				"########",
+				"# #### #",
+				" ###### ",
+				" ###### ",
+				"# #### #",
+				"########",
+				"# #  # #",
 			},
 		},
 	}
@@ -81,8 +81,10 @@ func TestGenerate(t *testing.T) {
 	for i, c := range cases {
 		grid := ppic.Generate(c.text, c.mX, c.mY)
 
-		if !reflect.DeepEqual(grid, c.expected) {
-			t.Errorf("generated grid does not match test data for case %d", i)
+		err := ppictest.Compare(grid, c.expected)
+
+		if err != nil {
+			t.Errorf("%s for case %d", err, i)
 		}
 	}
 }
