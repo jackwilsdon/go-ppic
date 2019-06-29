@@ -40,7 +40,7 @@ func Compare(grid [8][8]bool, expected [8]string) error {
 	return nil
 }
 
-// Compare an image to an expected image.
+// CompareImage compares an image with an expected image.
 //
 // Expected image must be 8 lines, each consisting of 8 characters.
 func CompareImage(img image.Image, expectedPal ppic.Palette, expected [8]string) error {
