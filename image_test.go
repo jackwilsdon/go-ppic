@@ -1,11 +1,12 @@
 package ppic_test
 
 import (
-	"github.com/jackwilsdon/go-ppic/ppictest"
+	"fmt"
 	"image/color"
 	"testing"
 
 	"github.com/jackwilsdon/go-ppic"
+	"github.com/jackwilsdon/go-ppic/ppictest"
 )
 
 func BenchmarkGenerateImage(b *testing.B) {
@@ -60,32 +61,32 @@ func TestGenerateImage(t *testing.T) {
 	}
 
 	for i, c := range cases {
-		img, err := ppic.GenerateImage(c.text, c.size, c.mX, c.mY, c.palette)
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			img, err := ppic.GenerateImage(c.text, c.size, c.mX, c.mY, c.palette)
 
-		if err != nil {
-			t.Errorf("error returned for case %d: %s", i, err)
-			continue
-		}
+			if err != nil {
+				t.Fatal(err)
+			}
 
-		err = ppictest.CompareImage(img, c.palette, c.image)
+			err = ppictest.CompareImage(img, c.palette, c.image)
 
-		if err != nil {
-			t.Errorf("%s for case %d", err, i)
-		}
+			if err != nil {
+				t.Error(err)
+			}
+		})
 	}
 }
 
 func TestGenerateImageWithInvalidSize(t *testing.T) {
 	_, err := ppic.GenerateImage("jackwilsdon", 31, true, false, ppic.DefaultPalette)
 
-	// Make sure we get the right error.
 	if err == nil || err != ppic.ErrInvalidSize {
 		msg := "nil"
 
 		if err != nil {
-			msg = "\"" + err.Error() + "\""
+			msg = fmt.Sprintf("%q", msg)
 		}
 
-		t.Errorf("expected error to be \"%s\" but got \"%s\"", ppic.ErrInvalidSize, msg)
+		t.Errorf("expected error to be %q but got %s", ppic.ErrInvalidSize, msg)
 	}
 }

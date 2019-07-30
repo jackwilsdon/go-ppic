@@ -2,7 +2,6 @@ package ppic_test
 
 import (
 	"bytes"
-	"github.com/jackwilsdon/go-ppic/ppictest"
 	"image"
 	"image/color"
 	_ "image/gif"
@@ -10,10 +9,13 @@ import (
 	_ "image/png"
 	"net/http"
 	"net/http/httptest"
+	"path"
+	"strings"
 	"testing"
 	"unicode"
 
 	"github.com/jackwilsdon/go-ppic"
+	"github.com/jackwilsdon/go-ppic/ppictest"
 )
 
 func isPrintable(s string) bool {
@@ -25,43 +27,42 @@ func isPrintable(s string) bool {
 	return true
 }
 
-func runBenchmark(b *testing.B, path string) {
-	for n := 0; n < b.N; n++ {
-		b.StopTimer()
-
-		req, err := http.NewRequest(http.MethodGet, path, nil)
-
-		if err != nil {
-			b.Errorf("http.NewRequest: %s", err)
-			continue
-		}
-
-		rec := httptest.NewRecorder()
-
-		b.StartTimer()
-
-		ppic.Handler(rec, req)
-
-		b.StopTimer()
-
-		res := rec.Result()
-
-		if res.StatusCode != http.StatusOK {
-			b.Errorf("expected status %d but got %d", http.StatusOK, res.StatusCode)
-		}
+func BenchmarkHandler(b *testing.B) {
+	paths := []string{
+		"/example.png",
+		"/example.gif",
+		"/example.jpg",
 	}
-}
 
-func BenchmarkHandlerPNG(b *testing.B) {
-	runBenchmark(b, "/example.png")
-}
+	for _, p := range paths {
+		ext := path.Ext(p)
 
-func BenchmarkHandlerGIF(b *testing.B) {
-	runBenchmark(b, "/example.gif")
-}
+		b.Run(strings.ToUpper(ext[1:]), func(b *testing.B) {
+			b.StopTimer()
 
-func BenchmarkHandlerJPEG(b *testing.B) {
-	runBenchmark(b, "/example.jpeg")
+			for n := 0; n < b.N; n++ {
+				req, err := http.NewRequest(http.MethodGet, p, nil)
+
+				if err != nil {
+					b.Fatalf("http.NewRequest: %s", err)
+				}
+
+				rec := httptest.NewRecorder()
+
+				b.StartTimer()
+
+				ppic.Handler(rec, req)
+
+				b.StopTimer()
+
+				res := rec.Result()
+
+				if res.StatusCode != http.StatusOK {
+					b.Fatalf("expected status to be %d but got %d", http.StatusOK, res.StatusCode)
+				}
+			}
+		})
+	}
 }
 
 func TestHandlerMethod(t *testing.T) {
@@ -77,28 +78,29 @@ func TestHandlerMethod(t *testing.T) {
 	}
 
 	for _, method := range methods {
-		req, err := http.NewRequest(method, "/example", nil)
+		t.Run(method, func(t *testing.T) {
+			req, err := http.NewRequest(method, "/example", nil)
 
-		if err != nil {
-			t.Errorf("http.NewRequest: %s", err)
-			continue
-		}
+			if err != nil {
+				t.Fatalf("http.NewRequest: %s", err)
+			}
 
-		rec := httptest.NewRecorder()
+			rec := httptest.NewRecorder()
 
-		ppic.Handler(rec, req)
+			ppic.Handler(rec, req)
 
-		res := rec.Result()
+			res := rec.Result()
 
-		if res.StatusCode != http.StatusMethodNotAllowed {
-			t.Errorf("expected status %d for %s but got %d", http.StatusMethodNotAllowed, method, res.StatusCode)
-		}
+			if res.StatusCode != http.StatusMethodNotAllowed {
+				t.Errorf("expected status to be %d but got %d", http.StatusMethodNotAllowed, res.StatusCode)
+			}
 
-		allow := res.Header.Get("Allow")
+			allow := res.Header.Get("Allow")
 
-		if allow != http.MethodGet {
-			t.Errorf("expected allow header \"%s\" for %s but got \"%s\"", http.MethodGet, method, allow)
-		}
+			if allow != http.MethodGet {
+				t.Errorf("expected allow header to be %q but got %q", http.MethodGet, allow)
+			}
+		})
 	}
 }
 
@@ -116,41 +118,41 @@ func TestHandlerType(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		req, err := http.NewRequest(http.MethodGet, c.path, nil)
+		t.Run(c.path[1:], func(t *testing.T) {
+			req, err := http.NewRequest(http.MethodGet, c.path, nil)
 
-		if err != nil {
-			t.Errorf("http.NewRequest: %s", err)
-			return
-		}
+			if err != nil {
+				t.Fatalf("http.NewRequest: %s", err)
+			}
 
-		rec := httptest.NewRecorder()
+			rec := httptest.NewRecorder()
 
-		ppic.Handler(rec, req)
+			ppic.Handler(rec, req)
 
-		res := rec.Result()
+			res := rec.Result()
 
-		if res.StatusCode != http.StatusOK {
-			t.Errorf("expected status %d for \"%s\" but got %d", http.StatusOK, c.path, res.StatusCode)
-			continue
-		}
+			if res.StatusCode != http.StatusOK {
+				t.Errorf("expected status to be %d but got %d", http.StatusOK, res.StatusCode)
+			}
 
-		// Try and decode the image in the response.
-		_, format, err := image.DecodeConfig(res.Body)
+			// Try and decode the image in the response.
+			_, format, err := image.DecodeConfig(res.Body)
 
-		if err != nil {
-			t.Errorf("failed to parse image for \"%s\": %s", c.path, err)
-		}
+			if err != nil {
+				t.Fatalf("failed to parse image: %s", err)
+			}
 
-		// If there is no error then we need to check the response format.
-		if err == nil && format != c.format {
-			t.Errorf("expected format \"%s\" for \"%s\" but got \"%s\"", c.format, c.path, format)
-		}
+			// If there is no error then we need to check the response format.
+			if format != c.format {
+				t.Errorf("expected format to be %q but got %q", c.format, format)
+			}
 
-		cType := res.Header.Get("Content-Type")
+			cType := res.Header.Get("Content-Type")
 
-		if cType != c.contentType {
-			t.Errorf("expected content type \"%s\" for \"%s\" but got \"%s\"", c.contentType, c.path, cType)
-		}
+			if cType != c.contentType {
+				t.Errorf("expected content type to be %q but got %q", c.contentType, cType)
+			}
+		})
 	}
 }
 
@@ -192,43 +194,43 @@ func TestHandlerSize(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		req, err := http.NewRequest(http.MethodGet, c.path, nil)
+		t.Run(c.path[1:], func(t *testing.T) {
+			req, err := http.NewRequest(http.MethodGet, c.path, nil)
 
-		if err != nil {
-			t.Errorf("http.NewRequest: %s", err)
-			return
-		}
-
-		rec := httptest.NewRecorder()
-
-		ppic.Handler(rec, req)
-
-		res := rec.Result()
-
-		if res.StatusCode != c.statusCode {
-			t.Errorf("expected status %d for \"%s\" but got %d", c.statusCode, c.path, res.StatusCode)
-		}
-
-		// We're only interested in checking the response if we aren't expecting an OK response.
-		if c.statusCode != http.StatusOK {
-			buf := bytes.Buffer{}
-
-			if _, err := buf.ReadFrom(res.Body); err != nil {
-				t.Errorf("failed to read from response buffer: %s", err)
-				continue
+			if err != nil {
+				t.Fatalf("http.NewRequest: %s", err)
 			}
 
-			txt := buf.String()
+			rec := httptest.NewRecorder()
 
-			if txt != c.response {
-				// Ensure that we don't print out garbage.
-				if !isPrintable(txt) {
-					txt = "<binary data>"
+			ppic.Handler(rec, req)
+
+			res := rec.Result()
+
+			if res.StatusCode != c.statusCode {
+				t.Errorf("expected status %d but got %d", c.statusCode, res.StatusCode)
+			}
+
+			// We're only interested in checking the response if we aren't expecting an OK response.
+			if c.statusCode != http.StatusOK {
+				buf := bytes.Buffer{}
+
+				if _, err := buf.ReadFrom(res.Body); err != nil {
+					t.Fatalf("failed to read from response buffer: %s", err)
 				}
 
-				t.Errorf("expected response body \"%s\" for \"%s\" but got \"%s\"", c.response, c.path, txt)
+				txt := buf.String()
+
+				if txt != c.response {
+					// Ensure that we don't print out garbage.
+					if !isPrintable(txt) {
+						txt = "<binary data>"
+					}
+
+					t.Errorf("expected response body \"%s\" but got \"%s\"", c.response, txt)
+				}
 			}
-		}
+		})
 	}
 }
 
@@ -307,32 +309,32 @@ func TestHandler(t *testing.T) {
 		},
 	}
 
-	for i, c := range cases {
-		req, err := http.NewRequest(http.MethodGet, c.path, nil)
+	for _, c := range cases {
+		t.Run(c.path[1:], func(t *testing.T) {
+			req, err := http.NewRequest(http.MethodGet, c.path, nil)
 
-		if err != nil {
-			t.Errorf("http.NewRequest: %s for case %d", err, i)
-			continue
-		}
+			if err != nil {
+				t.Fatalf("http.NewRequest: %s", err)
+			}
 
-		rec := httptest.NewRecorder()
+			rec := httptest.NewRecorder()
 
-		ppic.Handler(rec, req)
+			ppic.Handler(rec, req)
 
-		res := rec.Result()
+			res := rec.Result()
 
-		// Try and decode the image in the response.
-		img, _, err := image.Decode(res.Body)
+			// Try and decode the image in the response.
+			img, _, err := image.Decode(res.Body)
 
-		if err != nil {
-			t.Errorf("error returned: %s for case %d", err, i)
-			continue
-		}
+			if err != nil {
+				t.Fatalf("failed to parse image: %s", err)
+			}
 
-		err = ppictest.CompareImage(img, c.palette, c.image)
+			err = ppictest.CompareImage(img, c.palette, c.image)
 
-		if err != nil {
-			t.Errorf("%s for case %d", err, i)
-		}
+			if err != nil {
+				t.Error(err)
+			}
+		})
 	}
 }

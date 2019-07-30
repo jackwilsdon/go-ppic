@@ -1,10 +1,11 @@
 package ppic_test
 
 import (
-	"github.com/jackwilsdon/go-ppic/ppictest"
+	"fmt"
 	"testing"
 
 	"github.com/jackwilsdon/go-ppic"
+	"github.com/jackwilsdon/go-ppic/ppictest"
 )
 
 func BenchmarkGenerate(b *testing.B) {
@@ -79,12 +80,14 @@ func TestGenerate(t *testing.T) {
 	}
 
 	for i, c := range cases {
-		grid := ppic.Generate(c.text, c.mX, c.mY)
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			grid := ppic.Generate(c.text, c.mX, c.mY)
 
-		err := ppictest.Compare(grid, c.expected)
+			err := ppictest.Compare(grid, c.expected)
 
-		if err != nil {
-			t.Errorf("%s for case %d", err, i)
-		}
+			if err != nil {
+				t.Error(err)
+			}
+		})
 	}
 }

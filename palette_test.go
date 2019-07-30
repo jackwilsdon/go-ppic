@@ -57,45 +57,51 @@ func TestGeneratePalette(t *testing.T) {
 		},
 	}
 
-	for i, c := range cases {
-		p := ppic.GeneratePalette(c.text)
+	for _, c := range cases {
+		name := c.text
 
-		// Check the foreground color.
-		if !colorsEqual(c.palette.Foreground, p.Foreground) {
-			eR, eG, eB, eA := c.palette.Foreground.RGBA()
-			aR, aG, aB, aA := p.Foreground.RGBA()
-
-			t.Errorf(
-				"expected foreground to be %02X%02X%02X%02X but got %02X%02X%02X%02X for case %d",
-				uint8(eR),
-				uint8(eG),
-				uint8(eB),
-				uint8(eA),
-				uint8(aR),
-				uint8(aG),
-				uint8(aB),
-				uint8(aA),
-				i,
-			)
+		if len(name) == 0 {
+			name = "[empty]"
 		}
 
-		// Check the background color.
-		if !colorsEqual(c.palette.Background, p.Background) {
-			eR, eG, eB, eA := c.palette.Background.RGBA()
-			aR, aG, aB, aA := p.Background.RGBA()
+		t.Run(name, func(t *testing.T) {
+			p := ppic.GeneratePalette(c.text)
 
-			t.Errorf(
-				"expected foreground to be %02X%02X%02X%02X but got %02X%02X%02X%02X for case %d",
-				uint8(eR),
-				uint8(eG),
-				uint8(eB),
-				uint8(eA),
-				uint8(aR),
-				uint8(aG),
-				uint8(aB),
-				uint8(aA),
-				i,
-			)
-		}
+			// Check the foreground color.
+			if !colorsEqual(c.palette.Foreground, p.Foreground) {
+				eR, eG, eB, eA := c.palette.Foreground.RGBA()
+				aR, aG, aB, aA := p.Foreground.RGBA()
+
+				t.Errorf(
+					"expected foreground to be %02X%02X%02X%02X but got %02X%02X%02X%02X",
+					uint8(eR),
+					uint8(eG),
+					uint8(eB),
+					uint8(eA),
+					uint8(aR),
+					uint8(aG),
+					uint8(aB),
+					uint8(aA),
+				)
+			}
+
+			// Check the background color.
+			if !colorsEqual(c.palette.Background, p.Background) {
+				eR, eG, eB, eA := c.palette.Background.RGBA()
+				aR, aG, aB, aA := p.Background.RGBA()
+
+				t.Errorf(
+					"expected background to be %02X%02X%02X%02X but got %02X%02X%02X%02X",
+					uint8(eR),
+					uint8(eG),
+					uint8(eB),
+					uint8(eA),
+					uint8(aR),
+					uint8(aG),
+					uint8(aB),
+					uint8(aA),
+				)
+			}
+		})
 	}
 }
