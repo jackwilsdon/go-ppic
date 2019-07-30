@@ -2,8 +2,9 @@ package ppictest
 
 import (
 	"fmt"
-	"github.com/jackwilsdon/go-ppic"
 	"image"
+
+	"github.com/jackwilsdon/go-ppic"
 )
 
 // Validate the "expected" string for an 8x8 image.
