@@ -11,9 +11,9 @@ import (
 	"github.com/jackwilsdon/go-ppic"
 )
 
-var cmd = path.Base(os.Args[0])
-
 func main() {
+	cmd := path.Base(os.Args[0])
+
 	if len(os.Args) < 2 {
 		fmt.Fprintf(os.Stderr, "usage: %s text [size] > image.png\n", cmd)
 		os.Exit(1)

@@ -80,6 +80,8 @@ func TestGenerate(t *testing.T) {
 	}
 
 	for i, c := range cases {
+		c := c
+
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
 			grid := ppic.Generate(c.text, c.mX, c.mY)
 

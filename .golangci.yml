@@ -2,8 +2,10 @@ linters:
   enable:
     - deadcode
     - depguard
+    - dupl
     - errcheck
     - goconst
+    - gocritic
     - gocyclo
     - gofmt
     - goimports
@@ -13,13 +15,15 @@ linters:
     - govet
     - ineffassign
     - interfacer
+    - lll
     - maligned
-    - megacheck
     - misspell
     - nakedret
     - prealloc
+    - scopelint
     - staticcheck
     - structcheck
+    - stylecheck
     - typecheck
     - unconvert
     - unparam

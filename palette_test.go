@@ -58,6 +58,7 @@ func TestGeneratePalette(t *testing.T) {
 	}
 
 	for _, c := range cases {
+		c := c
 		name := c.text
 
 		if len(name) == 0 {

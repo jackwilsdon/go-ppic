@@ -61,6 +61,8 @@ func TestGenerateImage(t *testing.T) {
 	}
 
 	for i, c := range cases {
+		c := c
+
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
 			img, err := ppic.GenerateImage(c.text, c.size, c.mX, c.mY, c.palette)
 

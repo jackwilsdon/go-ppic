@@ -35,6 +35,7 @@ func BenchmarkHandler(b *testing.B) {
 	}
 
 	for _, p := range paths {
+		p := p
 		ext := path.Ext(p)
 
 		b.Run(strings.ToUpper(ext[1:]), func(b *testing.B) {
@@ -78,6 +79,8 @@ func TestHandlerMethod(t *testing.T) {
 	}
 
 	for _, method := range methods {
+		method := method
+
 		t.Run(method, func(t *testing.T) {
 			req, err := http.NewRequest(method, "/example", nil)
 
@@ -118,6 +121,8 @@ func TestHandlerType(t *testing.T) {
 	}
 
 	for _, c := range cases {
+		c := c
+
 		t.Run(c.path[1:], func(t *testing.T) {
 			req, err := http.NewRequest(http.MethodGet, c.path, nil)
 
@@ -194,6 +199,8 @@ func TestHandlerSize(t *testing.T) {
 	}
 
 	for _, c := range cases {
+		c := c
+
 		t.Run(c.path[1:], func(t *testing.T) {
 			req, err := http.NewRequest(http.MethodGet, c.path, nil)
 
@@ -310,6 +317,8 @@ func TestHandler(t *testing.T) {
 	}
 
 	for _, c := range cases {
+		c := c
+
 		t.Run(c.path[1:], func(t *testing.T) {
 			req, err := http.NewRequest(http.MethodGet, c.path, nil)
 
