@@ -6,6 +6,7 @@ package gziphandler
 import (
 	"bufio"
 	"compress/gzip"
+	"io"
 	"net"
 	"net/http"
 	"sync"
@@ -30,29 +31,24 @@ var bufferPool = &sync.Pool{
 	},
 }
 
-var gzipPool [BestCompression - HuffmanOnly + 1]*sync.Pool
+var gzipWriterPools [gzip.BestCompression - gzip.HuffmanOnly + 1]sync.Pool
 
-func gzipPoolIndex(level int) int {
-	return level - HuffmanOnly
+func gzipWriterPool(level int) *sync.Pool {
+	return &gzipWriterPools[level-gzip.HuffmanOnly]
 }
 
-func addGzipPool(level int) {
-	gzipPool[gzipPoolIndex(level)] = &sync.Pool{
-		New: func() interface{} {
-			w, err := gzip.NewWriterLevel(nil, level)
-			if err != nil {
-				panic(err)
-			}
-
-			return w
-		},
+func gzipWriterGet(w io.Writer, level int) *gzip.Writer {
+	if gw, ok := gzipWriterPool(level).Get().(*gzip.Writer); ok {
+		gw.Reset(w)
+		return gw
 	}
+
+	gw, _ := gzip.NewWriterLevel(w, level)
+	return gw
 }
 
-func init() {
-	for level := HuffmanOnly; level <= BestCompression; level++ {
-		addGzipPool(level)
-	}
+func gzipWriterPut(gw *gzip.Writer, level int) {
+	gzipWriterPool(level).Put(gw)
 }
 
 // These constants are copied from the gzip package, so
@@ -166,8 +162,7 @@ func (w *responseWriter) startGzip() (err error) {
 	// Bytes written during ServeHTTP are redirected to
 	// this gzip writer before being written to the
 	// underlying response.
-	w.gw = w.h.pool().Get().(*gzip.Writer)
-	w.gw.Reset(w.ResponseWriter)
+	w.gw = gzipWriterGet(w.ResponseWriter, w.h.level)
 
 	if buf := *w.buf; len(buf) != 0 {
 		// Flush the buffer into the gzip response.
@@ -287,7 +282,7 @@ func (w *responseWriter) Close() error {
 func (w *responseWriter) closeGzipped() error {
 	err := w.gw.Close()
 
-	w.h.pool().Put(w.gw)
+	gzipWriterPut(w.gw, w.h.level)
 	w.gw = nil
 
 	return err
@@ -328,10 +323,6 @@ func (w *responseWriter) Flush() {
 type handler struct {
 	h http.Handler
 	config
-}
-
-func (h *handler) pool() *sync.Pool {
-	return gzipPool[gzipPoolIndex(h.level)]
 }
 
 func (h *handler) shouldGzip(r *http.Request) bool {
