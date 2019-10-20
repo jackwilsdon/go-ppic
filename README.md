@@ -40,6 +40,11 @@ the string "example" by visiting `/example` on the server (`http://127.0.0.1:300
 The server accepts the following query parameters to change the response;
 
  * `?size=N` → specify the size of the image to return (must be a multiple of 8)
+ * `?mirror=AXES` → specify axes to mirror the image along
+   * `?mirror` → no mirroring
+   * `?mirror=x` → mirror along the X axis (default)
+   * `?mirror=y` → mirror along the Y axis
+   * `?mirror=xy` → mirror along the X and Y asES
  * `?monochrome` → change the image to black and white
 
 ### Supported Extensions
