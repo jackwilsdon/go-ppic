@@ -96,8 +96,8 @@ func CompareImage(img image.Image, expectedPal ppic.Palette, expected [8]string)
 			if eR != r || eG != g || eB != b || eA != a {
 				return fmt.Errorf(
 					"expected foreground at (%d, %d) to be #%02X%02X%02X%02X but got #%02X%02X%02X%02X",
-					x,
-					y,
+					x/ps,
+					y/ps,
 					uint8(eR),
 					uint8(eG),
 					uint8(eB),
