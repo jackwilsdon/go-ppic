@@ -28,7 +28,7 @@ func main() {
 		size, err = strconv.Atoi(os.Args[2])
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "%s: invalid size \"%s\"\n", cmd, os.Args[2])
+			fmt.Fprintf(os.Stderr, "%s: invalid size %q\n", cmd, os.Args[2])
 			os.Exit(1)
 		}
 	}
