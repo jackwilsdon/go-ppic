@@ -34,6 +34,39 @@ func getImageSize(q url.Values) (int, error) {
 	return s, nil
 }
 
+// getMirroring extracts mirroring axes from a set of URL values.
+// Axes are returned in the order (X, Y), with X being set by default if no
+// mirroring parameters are specified.
+func getMirroring(q url.Values) (bool, bool, error) {
+	ms, ok := q["mirror"]
+
+	if !ok || len(ms) == 0 {
+		return true, false, nil
+	}
+
+	m := ms[0]
+
+	mX := false
+	mY := false
+
+	for _, c := range m {
+		if (c == 'x' && mX) || (c == 'y' && mY) {
+			return false, false, fmt.Errorf("duplicate mirror axis: %c", c)
+		}
+
+		switch {
+		case c == 'x':
+			mX = true
+		case c == 'y':
+			mY = true
+		default:
+			return false, false, fmt.Errorf("unsupported mirror axis: %c", c)
+		}
+	}
+
+	return mX, mY, nil
+}
+
 // getImageWriter returns an imageWriter for the specified path.
 func getImageWriter(p string) imageWriter {
 	ext := path.Ext(p)
@@ -90,6 +123,15 @@ func Handler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// Get the mirroring axes from the request.
+	mX, mY, err := getMirroring(q)
+
+	if err != nil {
+		res.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(res, "error: %s", err)
+		return
+	}
+
 	// Get the path without extension.
 	txt := strings.TrimSuffix(req.URL.Path[1:], path.Ext(req.URL.Path))
 
@@ -101,7 +143,7 @@ func Handler(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Generate the grid.
-	grid := Generate(txt, true, false)
+	grid := Generate(txt, mX, mY)
 
 	// Generate the image.
 	img, err := GenerateImage(grid, size, pal)
