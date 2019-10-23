@@ -10,39 +10,16 @@ import (
 // ErrInvalidSize is an error caused by specifying a size which is not a multiple of 8.
 var ErrInvalidSize = errors.New("size must be a multiple of 8")
 
-// Generate returns an 8x8 grid of values based on the provided source text, optionally mirrored on the X or Y axis.
-func Generate(k string, mX, mY bool) [8][8]bool {
-	var d [8][8]bool
-
-	w := len(d[0])
-	h := len(d)
-
-	// Work out the number of pixels we need.
-	pc := w * h
-
-	// If we're mirroring we need half the number of pixels.
-	if mX {
-		pc /= 2
-	}
-
-	// If we're mirroring we need half the number of pixels.
-	if mY {
-		pc /= 2
-	}
-
-	// Work out the number of bytes we need (8 pixels per byte).
-	bc := pc / 8
-
+// Generate returns an 8x8 grid of values based on the provided source text, optionally mirrored along the X or Y axis.
+func Generate(k string, mX, mY bool) (img [8][8]bool) {
 	// Hash the string and create a random number source from it.
 	hsh := hashString(k)
 	src := rand.NewSource(hsh)
 	rnd := rand.New(src)
 
-	// The destination byte array for the random data.
-	b := make([]byte, bc)
-
-	// Fill in our buffer with some random data.
-	r, err := rnd.Read(b)
+	// Create a buffer and fill it with random data.
+	buf := make([]byte, 8)
+	n, err := rnd.Read(buf)
 
 	// The default source should never throw an error.
 	if err != nil {
@@ -50,47 +27,31 @@ func Generate(k string, mX, mY bool) [8][8]bool {
 	}
 
 	// The default source should always return the requested number of bytes.
-	if r != bc {
-		panic(fmt.Sprintf("failed to get random data: expected %d bytes but got %d", bc, r))
+	if n != len(buf) {
+		panic(fmt.Sprintf("failed to get random data: expected %d bytes but got %d", len(buf), n))
 	}
 
-	// Populate the left half of the image.
-	for i := 0; i < pc; i++ {
-		// The byte we're interested in.
-		bv := b[i/8]
-
-		// The mask for the byte we're interested in.
+	for i := 0; i < 64; i++ {
+		// Work out which bit of the current byte we're interested in.
 		mask := byte(math.Pow(2, float64(i%8)))
 
-		// The width we're dividing by.
-		cw := w
-
-		if mX {
-			cw /= 2
-		}
-
 		// Work out the position of the pixel we're looking at.
-		x := i % cw
-		y := i / cw
+		x := i % 8
+		y := i / 8
 
 		// Set the pixel based on whether or not the bit is set.
-		d[y][x] = bv&mask > 0
+		img[y][x] = buf[i/8]&mask > 0
 
-		// Mirror on the X axis if we need to.
-		if mX {
-			d[y][w-x-1] = d[y][x]
+		// If we're mirroring along the Y axis and past the center line then draw the mirrored pixels.
+		if mX && x >= 4 {
+			img[y][x] = img[y][7-x]
 		}
 
-		// Mirror in the Y axis if we need to.
-		if mY {
-			d[h-y-1][x] = d[y][x]
-
-			// If we're mirroring on both the X and Y axis then we need to set the bottom right value.
-			if mX {
-				d[h-y-1][w-x-1] = d[y][x]
-			}
+		// If we're mirroring along the X axis and past the center line then draw the mirrored pixels.
+		if mY && y >= 4 {
+			img[y][x] = img[7-y][x]
 		}
 	}
 
-	return d
+	return img
 }
