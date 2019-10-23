@@ -241,7 +241,7 @@ func TestHandlerSize(t *testing.T) {
 						txt = "<binary data>"
 					}
 
-					t.Errorf("expected response body \"%s\" but got \"%s\"", c.response, txt)
+					t.Errorf("expected response body %q but got %q", c.response, txt)
 				}
 			}
 		})
