@@ -248,6 +248,70 @@ func TestHandlerSize(t *testing.T) {
 	}
 }
 
+func TestHandlerMirrorError(t *testing.T) {
+	cases := []struct {
+		path     string
+		response string
+	}{
+		{"/example?mirror=a", "error: unsupported mirror axis: a"},
+		{"/example?mirror=ax", "error: unsupported mirror axis: a"},
+		{"/example?mirror=ay", "error: unsupported mirror axis: a"},
+		{"/example?mirror=xa", "error: unsupported mirror axis: a"},
+		{"/example?mirror=ya", "error: unsupported mirror axis: a"},
+		{"/example?mirror=xx", "error: duplicate mirror axis: x"},
+		{"/example?mirror=yy", "error: duplicate mirror axis: y"},
+		{"/example?mirror=xay", "error: unsupported mirror axis: a"},
+		{"/example?mirror=yax", "error: unsupported mirror axis: a"},
+		{"/example?mirror=xya", "error: unsupported mirror axis: a"},
+		{"/example?mirror=axy", "error: unsupported mirror axis: a"},
+		{"/example?mirror=yxa", "error: unsupported mirror axis: a"},
+		{"/example?mirror=ayx", "error: unsupported mirror axis: a"},
+		{"/example?mirror=xxy", "error: duplicate mirror axis: x"},
+		{"/example?mirror=xyy", "error: duplicate mirror axis: y"},
+		{"/example?mirror=yxx", "error: duplicate mirror axis: x"},
+		{"/example?mirror=yyx", "error: duplicate mirror axis: y"},
+	}
+
+	for _, c := range cases {
+		c := c
+
+		t.Run(c.path[1:], func(t *testing.T) {
+			req, err := http.NewRequest(http.MethodGet, c.path, nil)
+
+			if err != nil {
+				t.Fatalf("http.NewRequest: %s", err)
+			}
+
+			rec := httptest.NewRecorder()
+
+			ppic.Handler(rec, req)
+
+			res := rec.Result()
+
+			if res.StatusCode != http.StatusBadRequest {
+				t.Fatalf("expected status %d but got %d", http.StatusBadRequest, res.StatusCode)
+			}
+
+			buf := bytes.Buffer{}
+
+			if _, err := buf.ReadFrom(res.Body); err != nil {
+				t.Fatalf("failed to read from response buffer: %s", err)
+			}
+
+			txt := buf.String()
+
+			if txt != c.response {
+				// Ensure that we don't print out garbage.
+				if !isPrintable(txt) {
+					txt = "<binary data>"
+				}
+
+				t.Errorf("expected response body %q but got %q", c.response, txt)
+			}
+		})
+	}
+}
+
 func TestHandler(t *testing.T) {
 	cases := []struct {
 		path    string
@@ -286,20 +350,20 @@ func TestHandler(t *testing.T) {
 			},
 		},
 		{
-			path: "/testing123",
+			path: "/jackwilsdon?mirror=xy",
 			palette: ppic.Palette{
-				Foreground: color.RGBA{R: 0xCF, G: 0xC6, B: 0x85, A: 0xFF},
+				Foreground: color.RGBA{R: 0xEA, G: 0xE3, B: 0xA4, A: 0xFF},
 				Background: color.White,
 			},
 			image: [8]string{
-				"  ####  ",
-				" ###### ",
-				"#  ##  #",
+				"# #  # #",
+				"# #### #",
 				"        ",
+				"# #  # #",
+				"# #  # #",
 				"        ",
-				"##    ##",
-				"  ####  ",
-				" ##  ## ",
+				"# #### #",
+				"# #  # #",
 			},
 		},
 		{
