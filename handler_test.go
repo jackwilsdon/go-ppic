@@ -251,13 +251,11 @@ func TestHandlerSize(t *testing.T) {
 func TestHandler(t *testing.T) {
 	cases := []struct {
 		path    string
-		size    int
 		palette ppic.Palette
 		image   [8]string
 	}{
 		{
 			path: "/jackwilsdon",
-			size: 512,
 			palette: ppic.Palette{
 				Foreground: color.RGBA{R: 0xEA, G: 0xE3, B: 0xA4, A: 0xFF},
 				Background: color.White,
@@ -275,7 +273,6 @@ func TestHandler(t *testing.T) {
 		},
 		{
 			path:    "/jackwilsdon?monochrome",
-			size:    512,
 			palette: ppic.DefaultPalette,
 			image: [8]string{
 				"# #  # #",
@@ -290,7 +287,6 @@ func TestHandler(t *testing.T) {
 		},
 		{
 			path: "/testing123",
-			size: 512,
 			palette: ppic.Palette{
 				Foreground: color.RGBA{R: 0xCF, G: 0xC6, B: 0x85, A: 0xFF},
 				Background: color.White,
@@ -308,7 +304,6 @@ func TestHandler(t *testing.T) {
 		},
 		{
 			path:    "/testing123?monochrome",
-			size:    512,
 			palette: ppic.DefaultPalette,
 			image: [8]string{
 				"  ####  ",
