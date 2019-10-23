@@ -169,14 +169,6 @@ func TestHandlerSize(t *testing.T) {
 		statusCode int
 		response   string
 	}{
-		{"/example.", 512, http.StatusNotFound, "error: unsupported file format"},
-		{"/example.?size=1024", 1024, http.StatusNotFound, "error: unsupported file format"},
-		{"/example.?size=1023", 0, http.StatusNotFound, "error: unsupported file format"},
-		{"/example.?size=foo", 0, http.StatusNotFound, "error: unsupported file format"},
-		{"/example.foo", 512, http.StatusNotFound, "error: unsupported file format"},
-		{"/example.foo?size=1024", 1024, http.StatusNotFound, "error: unsupported file format"},
-		{"/example.foo?size=1023", 0, http.StatusNotFound, "error: unsupported file format"},
-		{"/example.foo?size=foo", 0, http.StatusNotFound, "error: unsupported file format"},
 		{"/example", 512, http.StatusOK, ""},
 		{"/example?size=1024", 1024, http.StatusOK, ""},
 		{"/example?size=1023", 0, http.StatusBadRequest, "error: size must be a multiple of 8"},
