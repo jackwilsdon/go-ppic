@@ -211,8 +211,22 @@ func TestHandlerSize(t *testing.T) {
 				t.Errorf("expected status %d but got %d", c.statusCode, res.StatusCode)
 			}
 
-			// We're only interested in checking the response if we aren't expecting an OK response.
-			if c.statusCode != http.StatusOK {
+			// If we're expecting a valid image then check its size.
+			if c.statusCode == http.StatusOK {
+				img, _, err := image.Decode(res.Body)
+
+				if err != nil {
+					t.Fatalf("failed to parse image: %s", err)
+				}
+
+				w := img.Bounds().Dx()
+				h := img.Bounds().Dy()
+
+				if w != c.size || h != c.size {
+					t.Errorf("expected image to be %dx%d but got %dx%d", c.size, c.size, w, h)
+				}
+			} else {
+				// Otherwise check the response text.
 				buf := bytes.Buffer{}
 
 				if _, err := buf.ReadFrom(res.Body); err != nil {
