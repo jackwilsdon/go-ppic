@@ -1,3 +1,5 @@
+github.com/ajstarks/svgo v0.0.0-20190826172357-de52242f3d65 h1:kZegOsPGxfV9mM8WzfllNZOx3MvM5zItmhQlvITKVvA=
+github.com/ajstarks/svgo v0.0.0-20190826172357-de52242f3d65/go.mod h1:K08gAheRH3/J6wwsYMMT4xOr94bZjxIelGM0+d/wbFw=
 github.com/felixge/httpsnoop v1.0.0 h1:gh8fMGz0rlOv/1WmRZm7OgncIOTsAj21iNJot48omJQ=
 github.com/felixge/httpsnoop v1.0.0/go.mod h1:3+D9sFq0ahK/JeJPhCBUV1xlf4/eIYrUQaxulT0VzX8=
 github.com/tmthrgd/gziphandler v0.0.0-20190303121617-ae837a951453 h1:A7mbNu1QStv15i15NTVAIvcW9BeCjGjEbBGp88eeRwQ=
