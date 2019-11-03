@@ -17,8 +17,8 @@ func rect(img image.Paletted, x, y, size int, c uint8) {
 	}
 }
 
-// GenerateImage returns an image for the specified source text, optionally mirrored on the X or Y axis.
-func GenerateImage(k string, size int, mX, mY bool, p Palette) (image.Image, error) {
+// GenerateImage returns an image for the specified grid.
+func GenerateImage(grid [8][8]bool, size int, p Palette) (image.Image, error) {
 	if size%8 != 0 {
 		return nil, ErrInvalidSize
 	}
@@ -28,7 +28,6 @@ func GenerateImage(k string, size int, mX, mY bool, p Palette) (image.Image, err
 
 	// Create the image and image data.
 	img := image.NewPaletted(image.Rect(0, 0, size, size), p.Palette())
-	grid := Generate(k, mX, mY)
 
 	// Create a wait group so we can wait for all of our goroutines to finish.
 	wg := sync.WaitGroup{}

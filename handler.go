@@ -97,8 +97,11 @@ func Handler(res http.ResponseWriter, req *http.Request) {
 		pal = GeneratePalette(txt)
 	}
 
+	// Generate the grid.
+	grid := Generate(txt, true, false)
+
 	// Generate the image.
-	img, err := GenerateImage(txt, size, true, false, pal)
+	img, err := GenerateImage(grid, size, pal)
 
 	// Check if an invalid size was specified.
 	if err == ErrInvalidSize {

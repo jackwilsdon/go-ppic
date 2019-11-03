@@ -10,8 +10,19 @@ import (
 )
 
 func BenchmarkGenerateImage(b *testing.B) {
+	grid := ppictest.Parse([8]string{
+		"# #  # #",
+		"# #### #",
+		"        ",
+		"# #  # #",
+		"  #  #  ",
+		"        ",
+		"##    ##",
+		"#      #",
+	})
+
 	for n := 0; n < b.N; n++ {
-		if _, err := ppic.GenerateImage("jackwilsdon", 512, false, false, ppic.DefaultPalette); err != nil {
+		if _, err := ppic.GenerateImage(grid, 512, ppic.DefaultPalette); err != nil {
 			b.Errorf("error: %s", err)
 		}
 	}
@@ -19,17 +30,23 @@ func BenchmarkGenerateImage(b *testing.B) {
 
 func TestGenerateImage(t *testing.T) {
 	cases := []struct {
-		text    string
+		grid    [8]string
 		size    int
-		mX      bool
-		mY      bool
 		palette ppic.Palette
 		image   [8]string
 	}{
 		{
-			text:    "jackwilsdon",
+			grid: [8]string{
+				"# #  # #",
+				"# #### #",
+				"        ",
+				"# #  # #",
+				"  #  #  ",
+				"        ",
+				"##    ##",
+				"#      #",
+			},
 			size:    512,
-			mX:      true,
 			palette: ppic.DefaultPalette,
 			image: [8]string{
 				"# #  # #",
@@ -43,9 +60,17 @@ func TestGenerateImage(t *testing.T) {
 			},
 		},
 		{
-			text:    "jackwilsdon",
+			grid: [8]string{
+				"# #  # #",
+				"# #### #",
+				"        ",
+				"# #  # #",
+				"  #  #  ",
+				"        ",
+				"##    ##",
+				"#      #",
+			},
 			size:    512,
-			mX:      true,
 			palette: ppic.Palette{Foreground: color.RGBA{R: 0xFF, A: 0xFF}, Background: color.Black},
 			image: [8]string{
 				"# #  # #",
@@ -64,7 +89,8 @@ func TestGenerateImage(t *testing.T) {
 		c := c
 
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
-			img, err := ppic.GenerateImage(c.text, c.size, c.mX, c.mY, c.palette)
+			grid := ppictest.Parse(c.grid)
+			img, err := ppic.GenerateImage(grid, c.size, c.palette)
 
 			if err != nil {
 				t.Fatal(err)
@@ -80,7 +106,18 @@ func TestGenerateImage(t *testing.T) {
 }
 
 func TestGenerateImageWithInvalidSize(t *testing.T) {
-	_, err := ppic.GenerateImage("jackwilsdon", 31, true, false, ppic.DefaultPalette)
+	grid := ppictest.Parse([8]string{
+		"# #  # #",
+		"# #### #",
+		"        ",
+		"# #  # #",
+		"  #  #  ",
+		"        ",
+		"##    ##",
+		"#      #",
+	})
+
+	_, err := ppic.GenerateImage(grid, 31, ppic.DefaultPalette)
 
 	if err == nil || err != ppic.ErrInvalidSize {
 		msg := "nil"
