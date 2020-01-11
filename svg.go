@@ -14,7 +14,7 @@ func colorToHex(c color.Color) string {
 }
 
 // GenerateSVG generates an SVG for the specified image.
-func GenerateSVG(grid [8][8]bool, p Palette) (string, error) {
+func GenerateSVG(grid [8][8]bool, p Palette) string {
 	buf := &bytes.Buffer{}
 	s := svg.New(buf)
 
@@ -40,5 +40,5 @@ func GenerateSVG(grid [8][8]bool, p Palette) (string, error) {
 
 	s.End()
 
-	return buf.String(), nil
+	return buf.String()
 }
