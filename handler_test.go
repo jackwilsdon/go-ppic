@@ -2,6 +2,7 @@ package ppic_test
 
 import (
 	"bytes"
+	"encoding/xml"
 	"image"
 	"image/color"
 	_ "image/gif"
@@ -33,6 +34,7 @@ func BenchmarkHandler(b *testing.B) {
 		"/example.png",
 		"/example.gif",
 		"/example.jpg",
+		"/example.svg",
 	}
 
 	for _, p := range paths {
@@ -119,6 +121,7 @@ func TestHandlerType(t *testing.T) {
 		{"/example.gif", "image/gif", "gif"},
 		{"/example.jpg", "image/jpeg", "jpeg"},
 		{"/example.jpeg", "image/jpeg", "jpeg"},
+		{"/example.svg", "image/svg+xml", "svg"},
 	}
 
 	for _, c := range cases {
@@ -141,22 +144,31 @@ func TestHandlerType(t *testing.T) {
 				t.Errorf("expected status to be %d but got %d", http.StatusOK, res.StatusCode)
 			}
 
-			// Try and decode the image in the response.
-			_, format, err := image.DecodeConfig(res.Body)
+			if c.format == "svg" {
+				// Try and decode the response as XML.
+				err := xml.NewDecoder(res.Body).Decode(new(interface{}))
 
-			if err != nil {
-				t.Fatalf("failed to parse image: %s", err)
-			}
+				if err != nil {
+					t.Fatalf("failed to parse SVG: %s", err)
+				}
+			} else {
+				// Try and decode the image in the response.
+				_, format, err := image.DecodeConfig(res.Body)
 
-			// If there is no error then we need to check the response format.
-			if format != c.format {
-				t.Errorf("expected format to be %q but got %q", c.format, format)
-			}
+				if err != nil {
+					t.Fatalf("failed to parse image: %s", err)
+				}
 
-			cType := res.Header.Get("Content-Type")
+				// If there is no error then we need to check the response format.
+				if format != c.format {
+					t.Errorf("expected format to be %q but got %q", c.format, format)
+				}
 
-			if cType != c.contentType {
-				t.Errorf("expected content type to be %q but got %q", c.contentType, cType)
+				cType := res.Header.Get("Content-Type")
+
+				if cType != c.contentType {
+					t.Errorf("expected content type to be %q but got %q", c.contentType, cType)
+				}
 			}
 		})
 	}
@@ -197,6 +209,10 @@ func TestHandlerSize(t *testing.T) {
 		{"/example.jpeg?size=1024", 1024, http.StatusOK, ""},
 		{"/example.jpeg?size=1023", 0, http.StatusBadRequest, "error: size must be a multiple of 8"},
 		{"/example.jpeg?size=foo", 0, http.StatusBadRequest, "error: invalid size"},
+		{"/example.svg", 512, http.StatusOK, ""},
+		{"/example.svg?size=1024", 1024, http.StatusOK, ""},
+		{"/example.svg?size=1023", 0, http.StatusOK, ""},
+		{"/example.svg?size=foo", 0, http.StatusOK, ""},
 	}
 
 	for _, c := range cases {
