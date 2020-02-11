@@ -33,7 +33,6 @@ func TestGenerateImage(t *testing.T) {
 		grid    [8]string
 		size    int
 		palette ppic.Palette
-		image   [8]string
 	}{
 		{
 			grid: [8]string{
@@ -48,16 +47,6 @@ func TestGenerateImage(t *testing.T) {
 			},
 			size:    512,
 			palette: ppic.DefaultPalette,
-			image: [8]string{
-				"# #  # #",
-				"# #### #",
-				"        ",
-				"# #  # #",
-				"  #  #  ",
-				"        ",
-				"##    ##",
-				"#      #",
-			},
 		},
 		{
 			grid: [8]string{
@@ -72,16 +61,6 @@ func TestGenerateImage(t *testing.T) {
 			},
 			size:    512,
 			palette: ppic.Palette{Foreground: color.RGBA{R: 0xFF, A: 0xFF}, Background: color.Black},
-			image: [8]string{
-				"# #  # #",
-				"# #### #",
-				"        ",
-				"# #  # #",
-				"  #  #  ",
-				"        ",
-				"##    ##",
-				"#      #",
-			},
 		},
 	}
 
@@ -96,7 +75,7 @@ func TestGenerateImage(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			err = ppictest.CompareImage(img, c.palette, c.image)
+			err = ppictest.CompareImage(img, c.palette, c.grid)
 
 			if err != nil {
 				t.Error(err)
