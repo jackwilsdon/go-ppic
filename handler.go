@@ -64,6 +64,7 @@ func Handler(res http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodGet {
 		res.Header().Set("Allow", http.MethodGet)
 		res.WriteHeader(http.StatusMethodNotAllowed)
+
 		return
 	}
 
@@ -73,6 +74,7 @@ func Handler(res http.ResponseWriter, req *http.Request) {
 	if writer == nil {
 		res.WriteHeader(http.StatusNotFound)
 		fmt.Fprintf(res, "error: unsupported file format")
+
 		return
 	}
 
@@ -84,6 +86,7 @@ func Handler(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		res.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(res, "error: invalid size")
+
 		return
 	}
 
@@ -107,6 +110,7 @@ func Handler(res http.ResponseWriter, req *http.Request) {
 	if err == ErrInvalidSize {
 		res.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(res, "error: %s", err)
+
 		return
 	}
 
@@ -114,6 +118,7 @@ func Handler(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(res, "error: %s", err)
+
 		return
 	}
 

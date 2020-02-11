@@ -2,14 +2,19 @@ linters:
   enable:
     - deadcode
     - depguard
+    - dogsled
     - dupl
     - errcheck
+    - gochecknoinits
+    - gocognit
     - goconst
     - gocritic
     - gocyclo
+    - godox
     - gofmt
     - goimports
     - golint
+    - goprintffuncname
     - gosec
     - gosimple
     - govet
@@ -20,6 +25,7 @@ linters:
     - misspell
     - nakedret
     - prealloc
+    - rowserrcheck
     - scopelint
     - staticcheck
     - structcheck
@@ -29,3 +35,5 @@ linters:
     - unparam
     - unused
     - varcheck
+    - whitespace
+    - wsl

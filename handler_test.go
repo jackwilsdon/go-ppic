@@ -24,6 +24,7 @@ func isPrintable(s string) bool {
 			return false
 		}
 	}
+
 	return true
 }
 
