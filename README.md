@@ -1,6 +1,6 @@
 # <img src="./assets/go-ppic.png" width="32" height="32" valign="middle" title="go-ppic example"> <img src="./assets/hello-world.png" width="32" height="32" valign="middle" title="go-ppic hello-world example"> <img src="./assets/jackwilsdon.png" width="32" height="32" valign="middle" title="go-ppic jackwilsdon example"> go-ppic <a href="https://travis-ci.com/jackwilsdon/go-ppic" title="Build status"><img src="https://travis-ci.com/jackwilsdon/go-ppic.svg?branch=master" valign="middle" title="Build status"></a> <a href="https://goreportcard.com/report/github.com/jackwilsdon/go-ppic" title="Go Report Card"><img src="https://goreportcard.com/badge/github.com/jackwilsdon/go-ppic" valign="middle" title="Go Report Card status"></a> <a href="https://godoc.org/github.com/jackwilsdon/go-ppic" title="GoDoc reference"><img src="https://godoc.org/github.com/jackwilsdon/go-ppic?status.svg" valign="middle" title="GoDoc reference"></a>
 
-Profile picture generation service written in Go. A demo can be found at [ppic.now.sh](https://ppic.now.sh/hello).
+Profile picture generation service written in Go. A demo can be found at [go-ppic.herokuapp.com](https://go-ppic.herokuapp.com/hello).
 
 `go-ppic` provides two commands; [`ppicd`](#ppicd) and [`ppic`](#ppic).
 
