@@ -84,7 +84,7 @@ func main() {
 		log.Fatalf("error: %s\n", err)
 	}
 
-	log.Printf("Starting server on http://%s...\n", addressToString(listener.Addr()))
+	log.Printf("starting server on http://%s...\n", addressToString(listener.Addr()))
 
 	// Wrap the handler in a logger if verbose mode is enabled.
 	if *verbose {

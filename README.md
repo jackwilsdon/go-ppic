@@ -29,7 +29,7 @@ go get -u github.com/jackwilsdon/go-ppic/cmd/ppicd
 After starting up the server, you should see something similar to the following output;
 
 ```Text
-2006/01/02 15:04:05 Starting server on http://127.0.0.1:3000...
+2006/01/02 15:04:05 starting server on http://127.0.0.1:3000...
 ```
 
 Visiting the URL that the server is running on will give you the image for an empty string. You can get the image for
