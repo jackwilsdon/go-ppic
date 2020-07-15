@@ -7,7 +7,7 @@ Profile picture generation service written in Go. A demo can be found at [go-ppi
 ## ppicd
 
 `ppicd` is a web server providing image generation.
-=
+
 ### Installation
 
 ```Shell
