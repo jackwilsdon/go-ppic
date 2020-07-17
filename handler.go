@@ -66,30 +66,10 @@ func Handler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	ext := path.Ext(req.URL.Path)
-	writer := getImageWriter(strings.ToLower(ext))
-
-	// If we couldn't find a writer then we couldn't understand the extension.
-	if writer == nil {
-		res.WriteHeader(http.StatusNotFound)
-		fmt.Fprintf(res, "error: unsupported file format")
-
-		return
-	}
-
 	q := req.URL.Query()
 
-	// Get the image size from the request.
-	size, err := getImageSize(q)
-
-	if err != nil {
-		res.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(res, "error: invalid size")
-
-		return
-	}
-
 	// Get the path without extension.
+	ext := path.Ext(req.URL.Path)
 	txt := strings.TrimSuffix(req.URL.Path[1:], ext)
 
 	pal := DefaultPalette
@@ -102,27 +82,57 @@ func Handler(res http.ResponseWriter, req *http.Request) {
 	// Generate the grid.
 	grid := Generate(txt, true, false)
 
-	// Generate the image.
-	img, err := GenerateImage(grid, size, pal)
+	// Lower-case the extension to make comparisons case-insensitive.
+	ext = strings.ToLower(ext)
 
-	// Check if an invalid size was specified.
-	if err == ErrInvalidSize {
-		res.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(res, "error: %s", err)
+	if ext == ".svg" {
+		img := GenerateSVG(grid, pal)
 
-		return
-	}
-
-	// Check if something else bad happened during generation.
-	if err != nil {
-		res.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(res, "error: %s", err)
+		res.Write([]byte(img))
 
 		return
 	}
 
-	// Write the image to the response.
-	if err = writer(res, img); err != nil {
-		fmt.Fprintf(res, "error: %s", err)
+	writer := getImageWriter(ext)
+
+	if writer != nil {
+		// Get the image size from the request.
+		size, err := getImageSize(q)
+
+		if err != nil {
+			res.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(res, "error: invalid size")
+
+			return
+		}
+
+		// Generate the image.
+		img, err := GenerateImage(grid, size, pal)
+
+		// Check if an invalid size was specified.
+		if err == ErrInvalidSize {
+			res.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(res, "error: %s", err)
+
+			return
+		}
+
+		// Check if something else bad happened during generation.
+		if err != nil {
+			res.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(res, "error: %s", err)
+
+			return
+		}
+
+		// Write the image to the response.
+		if err = writer(res, img); err != nil {
+			fmt.Fprintf(res, "error: %s", err)
+		}
+
+		return
 	}
+
+	res.WriteHeader(http.StatusNotFound)
+	fmt.Fprintf(res, "error: unsupported file format")
 }
