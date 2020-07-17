@@ -34,11 +34,9 @@ func getImageSize(q url.Values) (int, error) {
 	return s, nil
 }
 
-// getImageWriter returns an imageWriter for the specified path.
-func getImageWriter(p string) imageWriter {
-	ext := path.Ext(p)
-
-	switch strings.ToLower(ext) {
+// getImageWriter returns an imageWriter for the specified extension.
+func getImageWriter(ext string) imageWriter {
+	switch ext {
 	case ".gif":
 		return func(w io.Writer, i image.Image) error {
 			return gif.Encode(w, i, &gif.Options{NumColors: 2})
@@ -68,7 +66,8 @@ func Handler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	writer := getImageWriter(req.URL.Path)
+	ext := path.Ext(req.URL.Path)
+	writer := getImageWriter(strings.ToLower(ext))
 
 	// If we couldn't find a writer then we couldn't understand the extension.
 	if writer == nil {
@@ -91,7 +90,7 @@ func Handler(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// Get the path without extension.
-	txt := strings.TrimSuffix(req.URL.Path[1:], path.Ext(req.URL.Path))
+	txt := strings.TrimSuffix(req.URL.Path[1:], ext)
 
 	pal := DefaultPalette
 
