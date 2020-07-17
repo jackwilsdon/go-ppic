@@ -62,7 +62,7 @@ go get -u github.com/jackwilsdon/go-ppic/cmd/ppic
 ### Usage
 
 ```Text
-usage: ppic username [size] > image.png
+usage: ppic text [size] > image.png
 ```
 
 > `size` defaults to 512 if not provided
